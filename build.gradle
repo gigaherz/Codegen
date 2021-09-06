@@ -8,17 +8,17 @@ buildscript {
     dependencies {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.+', changing: true
         classpath 'org.parchmentmc:librarian:1.+'
-        //classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
+        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
     }
 }
 
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.parchmentmc.librarian.forgegradle'
-//apply plugin: 'org.spongepowered.mixin'
+apply plugin: 'org.spongepowered.mixin'
 apply plugin: 'maven-publish'
 
-version = "0.0.1"
-group= "gigaherz.jsonthings" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+version = "0.1.0"
+group= "dev.gigaherz.codegen" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "Codegen-1.17.1"
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(16)
@@ -27,12 +27,12 @@ repositories {
     maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
 }
 
-//mixin {
-//    add sourceSets.main, "jsonthings.refmap.json"
-//}
+mixin {
+    add sourceSets.main, "jsonthings.refmap.json"
+}
 
 minecraft {
-    mappings channel: 'parchment', version: '2021.08.15-1.17.1'
+    mappings channel: 'parchment', version: '2021.08.29-1.17.1'
 
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
@@ -98,13 +98,12 @@ minecraft.runs.all {
     }
 }
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.17.1-37.0.38'
+    minecraft 'net.minecraftforge:forge:1.17.1-37.0.71'
 
     library 'net.bytebuddy:byte-buddy:1.11.2'
     library 'com.google.guava:guava:21.0'
-    library 'org.spongepowered:mixin:0.8.4-SNAPSHOT'
 
-    //annotationProcessor 'org.spongepowered:mixin:0.8.2:processor'
+    annotationProcessor 'org.spongepowered:mixin:0.8.4:processor'
 }
 
 jar {

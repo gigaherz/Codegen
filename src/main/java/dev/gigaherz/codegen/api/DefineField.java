@@ -1,6 +1,6 @@
-package gigaherz.codegen.api;
+package dev.gigaherz.codegen.api;
 
-import gigaherz.codegen.codetree.ValueExpression;
+import dev.gigaherz.codegen.codetree.ValueExpression;
 
 public interface DefineField<C, F> extends FinishToClass<C>, Annotatable<DefineField<C, F>>
 {

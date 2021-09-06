@@ -1,6 +1,6 @@
-package gigaherz.codegen;
+package dev.gigaherz.codegen;
 
-import gigaherz.codegen.codetree.CodeBlock;
+import dev.gigaherz.codegen.codetree.CodeBlock;
 
 @SuppressWarnings("UnstableApiUsage")
 public class Demo

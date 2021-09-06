@@ -1,7 +1,7 @@
-package gigaherz.codegen.api;
+package dev.gigaherz.codegen.api;
 
 import com.google.common.reflect.TypeToken;
-import gigaherz.codegen.codetree.MethodInfo;
+import dev.gigaherz.codegen.codetree.MethodInfo;
 
 @SuppressWarnings("UnstableApiUsage")
 public interface DefineMethod<C, R> extends Implementable<C, MethodInfo>, Annotatable<DefineMethod<C, R>>

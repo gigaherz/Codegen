@@ -1,6 +1,6 @@
-package gigaherz.codegen.api;
+package dev.gigaherz.codegen.api;
 
-import gigaherz.codegen.codetree.MethodInfo;
+import dev.gigaherz.codegen.codetree.MethodInfo;
 
 public interface DefineParam<C, P, T extends DefineParam<C, P, T>> extends Implementable<C, MethodInfo>, Annotatable<T>
 {

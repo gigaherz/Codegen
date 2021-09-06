@@ -1,7 +1,7 @@
-package gigaherz.codegen.api;
+package dev.gigaherz.codegen.api;
 
 import com.google.common.reflect.TypeToken;
-import gigaherz.codegen.codetree.ClassInfo;
+import dev.gigaherz.codegen.codetree.ClassInfo;
 
 @SuppressWarnings("UnstableApiUsage")
 public interface FinishToClass<T> extends Finishable<DefineClass<T>>, DefineClass<T>

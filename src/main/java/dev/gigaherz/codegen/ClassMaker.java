@@ -1,16 +1,17 @@
-package gigaherz.codegen;
+package dev.gigaherz.codegen;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.reflect.TypeToken;
+import dev.gigaherz.codegen.api.*;
 import gigaherz.codegen.api.*;
-import gigaherz.codegen.codetree.ClassInfo;
-import gigaherz.codegen.codetree.CodeBlock;
-import gigaherz.codegen.codetree.MethodInfo;
-import gigaherz.codegen.codetree.ValueExpression;
-import gigaherz.codegen.type.TypeTokenProxy;
+import dev.gigaherz.codegen.codetree.ClassInfo;
+import dev.gigaherz.codegen.codetree.CodeBlock;
+import dev.gigaherz.codegen.codetree.MethodInfo;
+import dev.gigaherz.codegen.codetree.ValueExpression;
+import dev.gigaherz.codegen.type.TypeTokenProxy;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;

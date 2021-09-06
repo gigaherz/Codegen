@@ -1,4 +1,4 @@
-package gigaherz.codegen.api;
+package dev.gigaherz.codegen.api;
 
 public interface Finishable<T>
 {

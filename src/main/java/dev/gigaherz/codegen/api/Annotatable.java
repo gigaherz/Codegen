@@ -1,4 +1,4 @@
-package gigaherz.codegen.api;
+package dev.gigaherz.codegen.api;
 
 import java.lang.annotation.Annotation;
 

@@ -1,4 +1,4 @@
-package gigaherz.codegen.codetree;
+package dev.gigaherz.codegen.codetree;
 
 import com.google.common.reflect.TypeToken;
 

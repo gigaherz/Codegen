@@ -1,6 +1,6 @@
-package gigaherz.codegen.api;
+package dev.gigaherz.codegen.api;
 
-import gigaherz.codegen.codetree.CodeBlock;
+import dev.gigaherz.codegen.codetree.CodeBlock;
 
 import java.util.function.Function;
 

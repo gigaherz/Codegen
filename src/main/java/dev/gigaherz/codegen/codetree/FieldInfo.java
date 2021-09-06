@@ -1,4 +1,4 @@
-package gigaherz.codegen.codetree;
+package dev.gigaherz.codegen.codetree;
 
 public class FieldInfo
 {
