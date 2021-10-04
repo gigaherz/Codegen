@@ -1,10 +1,10 @@
 package dev.gigaherz.codegen.api;
 
 import com.google.common.reflect.TypeToken;
-import dev.gigaherz.codegen.codetree.ClassInfo;
+import dev.gigaherz.codegen.codetree.ClassData;
 
 @SuppressWarnings("UnstableApiUsage")
-public interface DefineClass<C>
+public interface DefineClass<C> extends Finishable<ClassDef<C>>
 {
     DefineClass<C> implementing(TypeToken<?> interfaceClass);
 
@@ -29,5 +29,7 @@ public interface DefineClass<C>
 
     DefineMethod<C, Void> constructor();
 
-    ClassInfo<? extends C> make();
+    byte[] makeClass();
+
+    ClassData<? extends C> make();
 }

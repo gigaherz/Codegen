@@ -1,4 +1,4 @@
-package dev.gigaherz.codegen.codetree;
+package dev.gigaherz.codegen.api.codetree.info;
 
 import org.objectweb.asm.MethodVisitor;
 
