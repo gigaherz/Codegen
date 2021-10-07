@@ -1,9 +1,6 @@
 package dev.gigaherz.codegen;
 
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
 import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.api.*;
 import dev.gigaherz.codegen.api.codetree.info.ClassInfo;
@@ -12,7 +9,7 @@ import dev.gigaherz.codegen.api.codetree.info.MethodInfo;
 import dev.gigaherz.codegen.api.codetree.info.ParamInfo;
 import dev.gigaherz.codegen.codetree.ClassData;
 import dev.gigaherz.codegen.codetree.CodeBlock;
-import dev.gigaherz.codegen.codetree.ValueExpression;
+import dev.gigaherz.codegen.codetree.expr.ValueExpression;
 import dev.gigaherz.codegen.type.TypeProxy;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
@@ -21,9 +18,7 @@ import org.objectweb.asm.Opcodes;
 import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -269,7 +264,7 @@ public class ClassMaker
 
                             mv.visitVarInsn(Opcodes.ALOAD,0); // this
 
-                            fi.init.compile(mv);
+                            fi.init.compile(mv, true);
 
                             mv.visitFieldInsn(Opcodes.PUTFIELD, mi.owner().thisType().getInternalName(), fname, TypeProxy.getTypeDescriptor(fi.fieldType));
                         }
@@ -549,6 +544,12 @@ public class ClassMaker
             public TypeToken<F> type()
             {
                 return this.fieldType;
+            }
+
+            @Override
+            public ClassInfo<?> owner()
+            {
+                return ClassImpl.this;
             }
         }
 
