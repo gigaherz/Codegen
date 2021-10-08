@@ -2,6 +2,7 @@ package dev.gigaherz.codegen.codetree.expr;
 
 import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.codetree.CodeBlock;
+import dev.gigaherz.codegen.type.TypeProxy;
 import org.objectweb.asm.MethodVisitor;
 
 @SuppressWarnings("UnstableApiUsage")
@@ -18,6 +19,12 @@ public class VarExpression<T> implements ValueExpression<T>
     public TypeToken<T> effectiveType()
     {
         return localVariable.variableType.actualType();
+    }
+
+    @Override
+    public TypeProxy<T> proxyType()
+    {
+        return localVariable.variableType;
     }
 
     @Override
