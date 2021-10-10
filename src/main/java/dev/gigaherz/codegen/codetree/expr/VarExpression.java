@@ -1,17 +1,18 @@
 package dev.gigaherz.codegen.codetree.expr;
 
 import com.google.common.reflect.TypeToken;
-import dev.gigaherz.codegen.codetree.CodeBlock;
+import dev.gigaherz.codegen.codetree.MethodImplementation;
 import dev.gigaherz.codegen.type.TypeProxy;
 import org.objectweb.asm.MethodVisitor;
 
 @SuppressWarnings("UnstableApiUsage")
-public class VarExpression<T> implements ValueExpression<T>
+public class VarExpression<T,B> extends ValueExpression<T,B>
 {
-    private final CodeBlock.LocalVariable<T> localVariable;
+    private final MethodImplementation.LocalVariable<T> localVariable;
 
-    public VarExpression(CodeBlock.LocalVariable<T> localVariable)
+    public VarExpression(CodeBlock<B,?,?> cb, MethodImplementation.LocalVariable<T> localVariable)
     {
+        super(cb);
         this.localVariable = localVariable;
     }
 
@@ -30,7 +31,7 @@ public class VarExpression<T> implements ValueExpression<T>
     @Override
     public void compile(MethodVisitor mv, boolean needsResult)
     {
-        if (needsResult) CodeBlock.LocalLoad.compile(localVariable, mv);
+        if (needsResult) MethodImplementation.LocalLoad.compile(localVariable, mv);
     }
 }
 
