@@ -5,6 +5,7 @@ import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.api.codetree.info.ClassInfo;
 import dev.gigaherz.codegen.api.codetree.info.MethodInfo;
 import dev.gigaherz.codegen.api.codetree.info.ParamInfo;
+import dev.gigaherz.codegen.codetree.impl.MethodImplementation;
 
 import java.util.List;
 
