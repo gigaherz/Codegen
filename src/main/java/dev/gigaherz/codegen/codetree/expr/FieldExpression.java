@@ -3,6 +3,7 @@ package dev.gigaherz.codegen.codetree.expr;
 import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.api.codetree.info.FieldInfo;
 import dev.gigaherz.codegen.codetree.impl.FieldLoad;
+import dev.gigaherz.codegen.codetree.impl.MethodImplementation;
 import org.objectweb.asm.MethodVisitor;
 
 @SuppressWarnings("UnstableApiUsage")
@@ -30,6 +31,8 @@ public class FieldExpression<T,B> extends ValueExpression<T,B>
         if (needsResult) {
             objRef.compile(mv, true);
             FieldLoad.compile(field, mv);
+            cb.popStack();
+            cb.pushStack(field.type());
         }
     }
 }
