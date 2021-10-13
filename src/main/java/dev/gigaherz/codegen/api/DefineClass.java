@@ -2,7 +2,6 @@ package dev.gigaherz.codegen.api;
 
 import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.api.codetree.info.ClassInfo;
-import dev.gigaherz.codegen.codetree.ClassData;
 
 @SuppressWarnings("UnstableApiUsage")
 public interface DefineClass<C> extends Finishable<ClassDef<C>>
