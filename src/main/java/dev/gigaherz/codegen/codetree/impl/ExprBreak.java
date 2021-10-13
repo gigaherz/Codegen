@@ -1,18 +1,20 @@
 package dev.gigaherz.codegen.codetree.impl;
 
-import dev.gigaherz.codegen.codetree.expr.CodeBlock;
+import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
 import dev.gigaherz.codegen.codetree.expr.ValueExpression;
+import dev.gigaherz.codegen.codetree.expr.impl.CodeBlockImpl;
+import dev.gigaherz.codegen.codetree.expr.impl.ValueExpressionImpl;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 public class ExprBreak extends InstructionSource
 {
-    private final CodeBlock<?, ?, ?> cb;
+    private final CodeBlockInternal<?, ?, ?> cb;
 
     private final ValueExpression<?, ?> value;
 
-    public ExprBreak(CodeBlock<?, ?, ?> cb, ValueExpression<?, ?> value)
+    public ExprBreak(CodeBlockInternal<?, ?, ?> cb, ValueExpression<?, ?> value)
     {
         this.cb = cb;
         this.value = value;

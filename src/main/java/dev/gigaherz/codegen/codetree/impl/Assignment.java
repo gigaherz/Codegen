@@ -1,6 +1,6 @@
 package dev.gigaherz.codegen.codetree.impl;
 
-import dev.gigaherz.codegen.codetree.expr.AssignExpression;
+import dev.gigaherz.codegen.codetree.expr.impl.AssignExpression;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 

@@ -5,7 +5,12 @@ import com.google.common.collect.Lists;
 import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.api.codetree.info.MethodInfo;
 import dev.gigaherz.codegen.api.codetree.info.ParamInfo;
-import dev.gigaherz.codegen.codetree.expr.*;
+import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
+import dev.gigaherz.codegen.codetree.expr.ValueExpression;
+import dev.gigaherz.codegen.codetree.expr.impl.CodeBlockImpl;
+import dev.gigaherz.codegen.codetree.expr.impl.NoopConversion;
+import dev.gigaherz.codegen.codetree.expr.impl.UnaryConversion;
+import dev.gigaherz.codegen.codetree.expr.impl.ValueExpressionImpl;
 import dev.gigaherz.codegen.type.TypeProxy;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
@@ -27,7 +32,7 @@ public class MethodImplementation<R>
     public int maxStack = 0;
 
     private final MethodInfo<R> methodInfo;
-    private final CodeBlock<R,Void,R> rootBlock;
+    private final CodeBlockInternal<R,Void,R> rootBlock;
 
     public int stackSize = 0;
     public int localsSize = 0;
@@ -73,7 +78,7 @@ public class MethodImplementation<R>
             localsSize += makeLocal(localsSize, f.paramType(), f.name());
         }
 
-        rootBlock = new CodeBlock<>(this, null, methodInfo.returnType());
+        rootBlock = new CodeBlockImpl<>(this, null, methodInfo.returnType());
     }
 
     public MethodInfo<R> methodInfo()
@@ -317,7 +322,7 @@ public class MethodImplementation<R>
         return value;
     }
 
-    public CodeBlock<R,Void,R> rootBlock()
+    public CodeBlockInternal<R,Void,R> rootBlock()
     {
         return rootBlock;
     }
