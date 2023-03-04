@@ -1,5 +1,6 @@
 package dev.gigaherz.codegen.codetree.expr.impl;
 
+import dev.gigaherz.codegen.api.FieldToken;
 import dev.gigaherz.codegen.codetree.MethodLookup;
 import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
 import dev.gigaherz.codegen.codetree.expr.LRef;
@@ -33,6 +34,12 @@ public abstract class ValueExpressionImpl<T, B> extends ExprBase<B> implements V
     public ValueExpression<?, B> field(String fieldName)
     {
         return cb.field(this, proxyType().classInfo().getField(fieldName));
+    }
+
+    @Override
+    public <F> ValueExpression<F, B> field(FieldToken<F> fieldToken)
+    {
+        return cb.field(this, proxyType().classInfo().getField(fieldToken.name()));
     }
 
     @Override

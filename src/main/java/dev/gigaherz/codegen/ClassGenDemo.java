@@ -106,7 +106,9 @@ public class ClassGenDemo
 
         try
         {
-            Files.write(Path.of("F:/" + builder.finish().getSimpleName() + ".class"), builder.makeClass());
+            var filename = "F:/" + builder.finish().getSimpleName() + ".class";
+            System.out.println("Saving class to file " + filename);
+            Files.write(Path.of(filename), builder.makeClass());
         }
         catch (IOException e)
         {

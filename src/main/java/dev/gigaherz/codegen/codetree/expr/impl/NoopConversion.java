@@ -27,7 +27,9 @@ public class NoopConversion<R, B> extends ValueExpressionImpl<R, B>
     @Override
     public void compile(MethodVisitor mv, boolean needsResult)
     {
+        cb.beforeExpressionCompile();
         value.compile(mv, needsResult);
+        cb.afterExpressionCompile(needsResult);
     }
 }
 

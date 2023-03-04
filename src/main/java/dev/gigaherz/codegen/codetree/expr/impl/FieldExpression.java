@@ -29,6 +29,8 @@ public class FieldExpression<T, B> extends ValueExpressionImpl<T, B>
     @Override
     public void compile(MethodVisitor mv, boolean needsResult)
     {
+        cb.beforeExpressionCompile();
+
         if (needsResult)
         {
             objRef.compile(mv, true);
@@ -36,5 +38,7 @@ public class FieldExpression<T, B> extends ValueExpressionImpl<T, B>
             cb.popStack();
             cb.pushStack(field.type());
         }
+
+        cb.afterExpressionCompile(needsResult);
     }
 }

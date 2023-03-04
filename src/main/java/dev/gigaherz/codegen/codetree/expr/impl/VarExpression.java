@@ -33,7 +33,13 @@ public class VarExpression<T, B> extends ValueExpressionImpl<T, B>
     @Override
     public void compile(MethodVisitor mv, boolean needsResult)
     {
-        if (needsResult) LocalLoad.compile(localVariable, mv);
+        cb.beforeExpressionCompile();
+        if (needsResult)
+        {
+            cb.pushStack(localVariable.variableType);
+            LocalLoad.compile(localVariable, mv);
+        }
+        cb.afterExpressionCompile(needsResult);
     }
 }
 

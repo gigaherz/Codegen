@@ -4,6 +4,7 @@ import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.api.codetree.info.MethodInfo;
 import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
 import dev.gigaherz.codegen.codetree.expr.ValueExpression;
+import dev.gigaherz.codegen.codetree.impl.MethodImplementation;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
@@ -36,6 +37,7 @@ public class MethodCallExpression<R, B> extends ValueExpressionImpl<R, B>
     @Override
     public void compile(MethodVisitor mv, boolean needsResult)
     {
+        cb.beforeExpressionCompile();
         if (method.isStatic())
         {
             lValues.forEach(val -> val.compile(mv, true));
@@ -56,6 +58,19 @@ public class MethodCallExpression<R, B> extends ValueExpressionImpl<R, B>
             for (int i = 0; i <= lValues.size(); i++) cb.popStack();
             mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, method.owner().thisType().getInternalName(), method.name(), method.getDescriptor(), method.owner().thisType().isInterface());
         }
-        cb.pushStack(method.returnType());
+        if (!MethodImplementation.isVoid(method.returnType()))
+        {
+            cb.pushStack(method.returnType());
+            if (!needsResult)
+            {
+                mv.visitInsn(MethodImplementation.slotCount(method.returnType()) == 2 ? Opcodes.POP2 : Opcodes.POP);
+                cb.popStack();
+            }
+        }
+        else if (needsResult)
+        {
+            throw new IllegalStateException("Method calls needs result but the method return type is void!");
+        }
+        cb.afterExpressionCompile(needsResult);
     }
 }

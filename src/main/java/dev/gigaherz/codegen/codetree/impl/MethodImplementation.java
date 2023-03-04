@@ -18,6 +18,7 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 
 import javax.annotation.Nullable;
+import java.util.EmptyStackException;
 import java.util.List;
 import java.util.Stack;
 
@@ -45,15 +46,37 @@ public class MethodImplementation<R>
         pushStack(MethodImplementation.slotCount(type));
     }
 
+    public void pushStack(TypeProxy<?> type)
+    {
+        pushStack(MethodImplementation.slotCount(type));
+    }
+
     public void pushStack(int slots)
     {
         currentStack.push(slots);
-        maxStack = Math.max(maxStack, currentStack.stream().mapToInt(i -> i).sum());
+        maxStack = Math.max(maxStack, peekStack());
     }
 
     public void popStack()
     {
-        currentStack.pop();
+        try
+        {
+            currentStack.pop();
+        }
+        catch(EmptyStackException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public int peekStack()
+    {
+        return currentStack.stream().mapToInt(i -> i).sum();
+    }
+
+    public int peekStackDepth()
+    {
+        return currentStack.size();
     }
 
     public Label makeLabel()

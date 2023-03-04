@@ -33,6 +33,8 @@ public class ConditionalExpression<T, B> extends ValueExpressionImpl<T, B>
     @Override
     public void compile(MethodVisitor mv, boolean needsResult)
     {
+        cb.beforeExpressionCompile();
+
         var jumpEnd = new Label();
         var jumpFalse = new Label();
 
@@ -43,5 +45,7 @@ public class ConditionalExpression<T, B> extends ValueExpressionImpl<T, B>
         mv.visitLabel(jumpFalse);
         falseBranch.compile(mv, !MethodImplementation.isVoid(falseBranch.effectiveType()));
         mv.visitLabel(jumpEnd);
+
+        cb.afterExpressionCompile(needsResult);
     }
 }

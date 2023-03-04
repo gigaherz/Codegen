@@ -34,10 +34,12 @@ public class UnaryOperator<R, B> extends ValueExpressionImpl<R, B>
     @Override
     public void compile(MethodVisitor mv, boolean needsResult)
     {
+        cb.beforeExpressionCompile();
         value.compile(mv, needsResult);
         if (needsResult)
         {
             mv.visitInsn(opcode);
         }
+        cb.afterExpressionCompile(needsResult);
     }
 }

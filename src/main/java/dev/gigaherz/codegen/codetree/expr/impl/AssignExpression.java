@@ -31,6 +31,8 @@ public class AssignExpression<T, S, B> extends ValueExpressionImpl<T, B>
     @Override
     public void compile(MethodVisitor mv, boolean needsResult)
     {
+        cb.beforeExpressionCompile();
+
         target.compileBefore(mv);
 
         int valueSize = MethodImplementation.slotCount(value.effectiveType());
@@ -48,5 +50,7 @@ public class AssignExpression<T, S, B> extends ValueExpressionImpl<T, B>
         target.compileAfter(mv);
 
         cb.popStack();
+
+        cb.afterExpressionCompile(needsResult);
     }
 }

@@ -27,6 +27,7 @@ public class LogicExpression<B> extends BooleanExpressionImpl<B>
     @Override
     public void compile(MethodVisitor mv, boolean needsResult)
     {
+        cb.beforeExpressionCompile();
         if (needsResult)
         {
             cb.emitComparison(mv, comparisonType, first, second, () -> {
@@ -35,6 +36,7 @@ public class LogicExpression<B> extends BooleanExpressionImpl<B>
                 mv.visitInsn(Opcodes.ICONST_0);
             });
         }
+        cb.afterExpressionCompile(needsResult);
     }
 
     @Override

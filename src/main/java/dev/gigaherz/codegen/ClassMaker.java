@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 @SuppressWarnings("UnstableApiUsage")
 public class ClassMaker
@@ -229,6 +230,18 @@ public class ClassMaker
             var m = new ConstructorImpl<>();
             constructors.add(m);
             return m;
+        }
+
+        @Override
+        public DefineClass<T> replicateParentConstructors(Consumer<CodeBlock<Void, ?, T>> cb)
+        {
+            return null;
+        }
+
+        @Override
+        public DefineClass<T> replicateParentConstructors(Predicate<MethodInfo<Void>> filter, Consumer<CodeBlock<Void, ?, T>> cb)
+        {
+            return null;
         }
 
         @Override
@@ -600,6 +613,8 @@ public class ClassMaker
                         mv.visitLocalVariable(n, local.variableType.getDescriptor(), local.variableType.getSignature(), startLabel, endLabel, local.index);
                         // mv.visitLocalVariableAnnotation
                     }
+
+                    mv.visitMaxs(code.maxStack, code.locals.size());
                 }
                 mv.visitEnd();
             }
@@ -787,7 +802,10 @@ public class ClassMaker
                         mv.visitLocalVariable(n, local.variableType.getDescriptor(), local.variableType.getSignature(), startLabel, endLabel, local.index);
                         // mv.visitLocalVariableAnnotation
                     }
+
+                    mv.visitMaxs(code.maxStack, code.locals.size());
                 }
+
                 mv.visitEnd();
             }
 

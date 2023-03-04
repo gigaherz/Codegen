@@ -3,6 +3,7 @@ package dev.gigaherz.codegen.codetree.expr;
 import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.api.codetree.info.FieldInfo;
 import dev.gigaherz.codegen.api.codetree.info.MethodInfo;
+import dev.gigaherz.codegen.type.TypeProxy;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 
@@ -34,7 +35,12 @@ public interface CodeBlockInternal<B, P, M> extends CodeBlock<B, P, M>
 
     void pushStack(TypeToken<?> returnType);
 
+    void pushStack(TypeProxy<?> returnType);
+
     <T> CodeBlockInternal<T, B, M> childBlock();
 
     boolean isEmpty();
+
+    void beforeExpressionCompile();
+    void afterExpressionCompile(boolean needsResult);
 }

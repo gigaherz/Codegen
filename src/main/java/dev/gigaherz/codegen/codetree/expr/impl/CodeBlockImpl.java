@@ -2,19 +2,22 @@ package dev.gigaherz.codegen.codetree.expr.impl;
 
 import com.google.common.collect.Lists;
 import com.google.common.reflect.TypeToken;
+import dev.gigaherz.codegen.api.FieldToken;
+import dev.gigaherz.codegen.api.VarToken;
 import dev.gigaherz.codegen.api.codetree.info.FieldInfo;
 import dev.gigaherz.codegen.api.codetree.info.MethodInfo;
 import dev.gigaherz.codegen.api.codetree.info.ParamInfo;
 import dev.gigaherz.codegen.codetree.MethodLookup;
 import dev.gigaherz.codegen.codetree.expr.*;
 import dev.gigaherz.codegen.codetree.impl.*;
+import dev.gigaherz.codegen.type.TypeProxy;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Stack;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -77,13 +80,39 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, P, M>
         return instructions.size() == 0;
     }
 
+    private Stack<Integer> beforeStack = new Stack<>();
+    @Override
+    public void beforeExpressionCompile()
+    {
+        beforeStack.push(owner.peekStackDepth());
+    }
+
+    @Override
+    public void afterExpressionCompile(boolean needsResult)
+    {
+        var diff = (needsResult ? 1 : 0);
+        if ((owner.peekStackDepth() - beforeStack.pop()) != diff)
+            throw new IllegalStateException("Stack at the end of an expression must be "+diff+" more than it was at the start");
+    }
+
     @Override
     public List<InstructionSource> instructions()
     {
         return instructions;
     }
 
+    @Override
+    public CodeBlock<B, P, M> local(String name, TypeToken<?> varType)
+    {
+        return null;
+    }
+
     public void pushStack(TypeToken<?> type)
+    {
+        owner.pushStack(type);
+    }
+
+    public void pushStack(TypeProxy<?> type)
     {
         owner.pushStack(type);
     }
@@ -211,6 +240,12 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, P, M>
     }
 
     @Override
+    public LRef<?> localRef(String localName)
+    {
+        return null;
+    }
+
+    @Override
     public LRef<?> fieldRef(ValueExpression<?, B> objRef, FieldInfo<?> fieldInfo)
     {
         return new FieldRef<>(this, objRef, fieldInfo);
@@ -220,6 +255,12 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, P, M>
     public <T> ValueExpression<T, B> field(String fieldName)
     {
         return field(thisVar(), owner.methodInfo().owner().getField(fieldName));
+    }
+
+    @Override
+    public <T> ValueExpression<T, B> field(FieldToken<T> fieldToken)
+    {
+        return null;
     }
 
     @Override
@@ -235,6 +276,12 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, P, M>
     }
 
     @Override
+    public ValueExpression<?, B> staticField(TypeToken<?> type, String fieldName)
+    {
+        return null;
+    }
+
+    @Override
     public ValueExpression<?, B> thisVar()
     {
         return new VarExpression<>(this, owner.getLocalVariable(0));
@@ -244,6 +291,12 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, P, M>
     public ValueExpression<?, B> superVar()
     {
         return new NoopConversion<>(this, owner.methodInfo().owner().superClass(), new VarExpression<>(this, owner.getLocalVariable(0)));
+    }
+
+    @Override
+    public <T> ValueExpression<T, B> localVar(VarToken<T> varToken)
+    {
+        return null;
     }
 
     @Override
@@ -520,6 +573,30 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, P, M>
     {
         instructions.add(new IfBlock<>(this, condition, trueBranch, falseBranch));
         return this;
+    }
+
+    @Override
+    public CodeBlock<B, P, M> forLoop(String localName, TypeToken<?> varType, BooleanExpression<?> condition, ValueExpression<?, B> step, Consumer<CodeBlock<B, B, M>> body)
+    {
+        return null;
+    }
+
+    @Override
+    public <V, S extends V> CodeBlock<B, P, M> forEach(String localName, TypeToken<V> varType, ValueExpression<S, B> collection, Consumer<CodeBlock<B, B, M>> body)
+    {
+        return null;
+    }
+
+    @Override
+    public <V, S extends V> CodeBlock<B, P, M> whileLoop(BooleanExpression<?> condition, Consumer<CodeBlock<B, B, M>> body)
+    {
+        return null;
+    }
+
+    @Override
+    public <V, S extends V> CodeBlock<B, P, M> doWhile(Consumer<CodeBlock<B, B, M>> body, BooleanExpression<?> condition)
+    {
+        return null;
     }
 
     public MethodImplementation<M> owner()

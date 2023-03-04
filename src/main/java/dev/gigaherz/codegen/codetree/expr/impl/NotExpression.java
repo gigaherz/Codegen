@@ -21,6 +21,7 @@ public class NotExpression<B> extends BooleanExpressionImpl<B>
     @Override
     public void compile(MethodVisitor mv, boolean needsResult)
     {
+        cb.beforeExpressionCompile();
         first.compile(mv, needsResult);
         if (needsResult)
         {
@@ -32,6 +33,7 @@ public class NotExpression<B> extends BooleanExpressionImpl<B>
             mv.visitLabel(jumpFalse);
             mv.visitInsn(Opcodes.ICONST_1);
             mv.visitLabel(jumpEnd);
+            cb.afterExpressionCompile(needsResult);
         }
     }
 

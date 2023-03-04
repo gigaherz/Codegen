@@ -24,6 +24,8 @@ public class CodeBlockExpression<B, P> extends ValueExpressionImpl<B, P>
     @Override
     public void compile(MethodVisitor mv, boolean needsResult)
     {
+        cb.beforeExpressionCompile();
         thisBlock.compile(mv, needsResult);
+        cb.afterExpressionCompile(needsResult);
     }
 }
