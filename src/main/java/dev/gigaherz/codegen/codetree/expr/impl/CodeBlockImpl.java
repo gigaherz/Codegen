@@ -104,7 +104,7 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, P, M>
     @Override
     public CodeBlock<B, P, M> local(String name, TypeToken<?> varType)
     {
-        return null;
+        throw new IllegalStateException("Not implemented");
     }
 
     public void pushStack(TypeToken<?> type)
@@ -242,7 +242,7 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, P, M>
     @Override
     public LRef<?> localRef(String localName)
     {
-        return null;
+        throw new IllegalStateException("Not implemented");
     }
 
     @Override
@@ -260,7 +260,7 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, P, M>
     @Override
     public <T> ValueExpression<T, B> field(FieldToken<T> fieldToken)
     {
-        return null;
+        throw new IllegalStateException("Not implemented");
     }
 
     @Override
@@ -278,7 +278,7 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, P, M>
     @Override
     public ValueExpression<?, B> staticField(TypeToken<?> type, String fieldName)
     {
-        return null;
+        throw new IllegalStateException("Not implemented");
     }
 
     @Override
@@ -296,7 +296,7 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, P, M>
     @Override
     public <T> ValueExpression<T, B> localVar(VarToken<T> varToken)
     {
-        return null;
+        throw new IllegalStateException("Not implemented");
     }
 
     @Override
@@ -355,7 +355,7 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, P, M>
     @Override
     public <R> ValueExpression<R, B> staticCall(TypeToken<?> classToken, String methodName, List<ValueExpression<?, B>> values)
     {
-        return null;
+        throw new IllegalStateException("Not implemented");
     }
 
     @Override
@@ -578,25 +578,25 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, P, M>
     @Override
     public CodeBlock<B, P, M> forLoop(String localName, TypeToken<?> varType, BooleanExpression<?> condition, ValueExpression<?, B> step, Consumer<CodeBlock<B, B, M>> body)
     {
-        return null;
+        throw new IllegalStateException("Not implemented");
     }
 
     @Override
     public <V, S extends V> CodeBlock<B, P, M> forEach(String localName, TypeToken<V> varType, ValueExpression<S, B> collection, Consumer<CodeBlock<B, B, M>> body)
     {
-        return null;
+        throw new IllegalStateException("Not implemented");
     }
 
     @Override
     public <V, S extends V> CodeBlock<B, P, M> whileLoop(BooleanExpression<?> condition, Consumer<CodeBlock<B, B, M>> body)
     {
-        return null;
+        throw new IllegalStateException("Not implemented");
     }
 
     @Override
     public <V, S extends V> CodeBlock<B, P, M> doWhile(Consumer<CodeBlock<B, B, M>> body, BooleanExpression<?> condition)
     {
-        return null;
+        throw new IllegalStateException("Not implemented");
     }
 
     public MethodImplementation<M> owner()

@@ -5,6 +5,7 @@ import dev.gigaherz.codegen.api.codetree.info.ClassInfo;
 import dev.gigaherz.codegen.codetree.ClassData;
 
 import javax.annotation.Nullable;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 import java.util.Objects;
 
@@ -28,11 +29,9 @@ public interface TypeProxy<T>
 
     TypeToken<T> actualType();
 
-    String getSimpleName();
-
     String getInternalName();
 
-    String getCanonicalName();
+    String getName();
 
     ClassInfo<T> classInfo();
 
@@ -105,8 +104,7 @@ public interface TypeProxy<T>
     boolean isInterface();
 
     @Nullable
-    Class<?> getRawType();
-
+    Class<? super T> getRawType();
 
     @Nullable
     static String getTypeSignature(TypeToken<?> type)
@@ -118,6 +116,8 @@ public interface TypeProxy<T>
     {
         return TypeProxy.of(type).getDescriptor();
     }
+
+    Constructor<T> getConstructor(Class<?>... parameterTypes) throws NoSuchMethodException, SecurityException;
 
     @SuppressWarnings({"UnstableApiUsage", "ClassCanBeRecord"})
     class Token<T> implements TypeProxy<T>
@@ -138,21 +138,15 @@ public interface TypeProxy<T>
         }
 
         @Override
-        public String getSimpleName()
-        {
-            return type.getRawType().getSimpleName();
-        }
-
-        @Override
         public String getInternalName()
         {
-            return getCanonicalName().replace(".", "/");
+            return getName().replace(".", "/");
         }
 
         @Override
-        public String getCanonicalName()
+        public String getName()
         {
-            return actualType().getRawType().getCanonicalName();
+            return actualType().getRawType().getName();
         }
 
         @Override
@@ -180,7 +174,7 @@ public interface TypeProxy<T>
         }
 
         @Override
-        public Class<?> getRawType()
+        public Class<? super T> getRawType()
         {
             return type.getRawType();
         }
@@ -189,6 +183,12 @@ public interface TypeProxy<T>
         public String toString()
         {
             return type.toString();
+        }
+
+        @Override
+        public Constructor<T> getConstructor(Class<?>... parameterTypes) throws NoSuchMethodException, SecurityException
+        {
+            return (Constructor<T>) type.getRawType().getConstructor(parameterTypes);
         }
     }
 }

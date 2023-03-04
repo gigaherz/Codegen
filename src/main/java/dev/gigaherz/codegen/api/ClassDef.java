@@ -6,3 +6,4 @@ import dev.gigaherz.codegen.type.TypeProxy;
 public interface ClassDef<C> extends DefineClass<C>, ClassInfo<C>, TypeProxy<C>
 {
 }
+

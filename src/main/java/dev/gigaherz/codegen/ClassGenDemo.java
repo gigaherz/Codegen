@@ -7,7 +7,7 @@ import java.nio.file.Path;
 
 public class ClassGenDemo
 {
-    public static class Test
+    public static class Test implements Vector3I
     {
         protected final int x;
         protected final int y;
@@ -73,10 +73,18 @@ public class ClassGenDemo
         }
     }
 
+    public interface Vector3I
+    {
+        int getX();
+        int getY();
+        int getZ();
+    }
+
     public static void main(String[] args)
     {
         var builder = new ClassMaker(Thread.currentThread().getContextClassLoader()).begin()
                 .setPublic().setFinal()
+                .implementing(Vector3I.class)
                 .field("x", int.class).setPrivate().setFinal()
                 .field("y", int.class).setPrivate().setFinal()
                 .field("z", int.class).setPrivate().setFinal()
@@ -106,7 +114,7 @@ public class ClassGenDemo
 
         try
         {
-            var filename = "F:/" + builder.finish().getSimpleName() + ".class";
+            var filename = "F:/" + builder.finish().getName() + ".class";
             System.out.println("Saving class to file " + filename);
             Files.write(Path.of(filename), builder.makeClass());
         }
@@ -118,10 +126,10 @@ public class ClassGenDemo
         var ci = builder.make();
         try
         {
-            var cn = ci.thisType().getRawType().getConstructor(int.class, int.class, int.class);
+            var cn = ci.thisType().getConstructor(int.class, int.class, int.class);
+            cn.setAccessible(true);
             var instance = cn.newInstance(1, 2, 3);
-            var m = ci.thisType().getRawType().getMethod("getX");
-            var x = (int) m.invoke(instance);
+            var x = instance.getX();
             System.out.println("getX() returned " + x);
         }
         catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e)

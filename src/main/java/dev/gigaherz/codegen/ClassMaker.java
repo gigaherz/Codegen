@@ -22,6 +22,7 @@ import org.objectweb.asm.Opcodes;
 
 import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Optional;
@@ -105,7 +106,7 @@ public class ClassMaker
         }
 
         @Override
-        public <T> ClassDef<? extends T> extending(TypeToken<T> baseClass)
+        public <T> ClassDefTyped<? extends T> extending(TypeToken<T> baseClass)
         {
             Class<? super T> rawType = baseClass.getRawType();
             if (baseClass.isArray())
@@ -116,7 +117,14 @@ public class ClassMaker
                 throw new IllegalStateException("The provided class " + baseClass + " is an interface!");
             if (rawType.isEnum())
                 throw new IllegalStateException("The provided class " + baseClass + " is an enum!");
-            return new ClassImpl<>(baseClass, this);
+            return new ClassImplTyped<>(baseClass, this);
+        }
+
+        @Override
+        public <I> ClassDefTyped<? extends I> implementing(TypeToken<I> interfaceClass)
+        {
+            implementingInternal(interfaceClass);
+            return new ClassImplTyped<>(this.superClass(), this);
         }
 
         @Override
@@ -169,7 +177,27 @@ public class ClassMaker
         }
     }
 
-    public class ClassImpl<C, T extends C> implements ClassDef<T>
+    public class ClassImplTyped<C, T extends C> extends ClassImpl<C, T> implements ClassDefTyped<T>
+    {
+        public ClassImplTyped(TypeToken<C> baseClass)
+        {
+            super(baseClass);
+        }
+
+        public ClassImplTyped(TypeToken<C> baseClass, BasicClassImpl copyFrom)
+        {
+            super(baseClass, copyFrom);
+        }
+
+        @Override
+        public ClassDefTyped<T> implementing(TypeToken<?> interfaceClass)
+        {
+            implementingInternal(interfaceClass);
+            return this;
+        }
+    }
+
+    public abstract class ClassImpl<C, T extends C> implements ClassDef<T>
     {
         protected final List<Annotation> annotations = Lists.newArrayList();
         protected final List<FieldImpl<?>> fields = Lists.newArrayList();
@@ -194,18 +222,18 @@ public class ClassMaker
         {
             this(baseClass);
 
+            superInterfaces.addAll(copyFrom.superInterfaces);
             copyFrom.fields.forEach((v) -> fields.add(new FieldImpl(v)));
             copyFrom.constructors.forEach((v) -> constructors.add(new ConstructorImpl(v)));
             copyFrom.methods.forEach((v) -> methods.add(new MethodImpl(v)));
             annotations.addAll(copyFrom.annotations);
         }
 
-        @Override
-        public DefineClass<T> implementing(TypeToken<?> interfaceClass)
+        public void implementingInternal(TypeToken<?> interfaceClass)
         {
             if (!interfaceClass.getRawType().isInterface())
                 throw new IllegalStateException("The provided class " + interfaceClass + " is not an interface!");
-            return this;
+            superInterfaces.add(interfaceClass);
         }
 
         @Override
@@ -235,13 +263,13 @@ public class ClassMaker
         @Override
         public DefineClass<T> replicateParentConstructors(Consumer<CodeBlock<Void, ?, T>> cb)
         {
-            return null;
+            throw new IllegalStateException("Not implemented");
         }
 
         @Override
         public DefineClass<T> replicateParentConstructors(Predicate<MethodInfo<Void>> filter, Consumer<CodeBlock<Void, ?, T>> cb)
         {
-            return null;
+            throw new IllegalStateException("Not implemented");
         }
 
         @Override
@@ -254,9 +282,11 @@ public class ClassMaker
         {
             var cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
 
+            var interfaces = superInterfaces.stream().map(iface -> TypeProxy.of(iface).getInternalName()).toArray(String[]::new);
+
             cw.visit(Opcodes.V16, modifiers | Opcodes.ACC_SUPER, getInternalName(), getSignature(),
                     TypeProxy.of(superClass).getInternalName(),
-                    superInterfaces.stream().map(iface -> TypeProxy.of(iface).getInternalName()).toArray(String[]::new));
+                    interfaces);
 
                 /*for(var ann : annotations)
                 {
@@ -309,19 +339,13 @@ public class ClassMaker
         }
 
         @Override
-        public String getSimpleName()
-        {
-            return name;
-        }
-
-        @Override
         public String getInternalName()
         {
             return fullName.replace(".", "/");
         }
 
         @Override
-        public String getCanonicalName()
+        public String getName()
         {
             return fullName;
         }
@@ -359,9 +383,9 @@ public class ClassMaker
 
         @Nullable
         @Override
-        public Class<?> getRawType()
+        public Class<? super T> getRawType()
         {
-            return null;
+            throw new IllegalStateException("Not implemented");
         }
 
         @Override
@@ -1015,6 +1039,12 @@ public class ClassMaker
                     return this.name;
                 }
             }
+        }
+
+        @Override
+        public Constructor<T> getConstructor(Class<?>... parameterTypes) throws NoSuchMethodException, SecurityException
+        {
+            return (Constructor<T>) getRawType().getConstructor(parameterTypes);
         }
     }
 

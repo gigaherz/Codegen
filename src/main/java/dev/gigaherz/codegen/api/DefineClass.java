@@ -13,13 +13,6 @@ import java.util.function.Predicate;
 @SuppressWarnings("UnstableApiUsage")
 public interface DefineClass<C> extends Finishable<ClassDef<C>>
 {
-    DefineClass<C> implementing(TypeToken<?> interfaceClass);
-
-    default DefineClass<C> implementing(Class<?> baseClass)
-    {
-        return implementing(TypeToken.of(baseClass));
-    }
-
     <F> DefineField<C, F> field(String name, TypeToken<F> fieldType);
 
     default <F> DefineField<C, F> field(String name, Class<F> fieldType)
@@ -48,3 +41,4 @@ public interface DefineClass<C> extends Finishable<ClassDef<C>>
 
     ClassInfo<? extends C> make();
 }
+

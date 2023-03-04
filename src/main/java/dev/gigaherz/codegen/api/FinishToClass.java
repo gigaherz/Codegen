@@ -13,12 +13,6 @@ import java.util.function.Predicate;
 public interface FinishToClass<T> extends Finishable<ClassDef<T>>, DefineClass<T>
 {
     @Override
-    default DefineClass<T> implementing(TypeToken<?> interfaceClass)
-    {
-        return finish().implementing(interfaceClass);
-    }
-
-    @Override
     default <F> DefineField<T, F> field(String name, TypeToken<F> fieldType)
     {
         return finish().field(name, fieldType);
