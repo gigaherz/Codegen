@@ -1,7 +1,6 @@
 package dev.gigaherz.codegen;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
 import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.api.*;
 import dev.gigaherz.codegen.api.codetree.info.ClassInfo;
@@ -9,7 +8,6 @@ import dev.gigaherz.codegen.api.codetree.info.FieldInfo;
 import dev.gigaherz.codegen.api.codetree.info.MethodInfo;
 import dev.gigaherz.codegen.api.codetree.info.ParamInfo;
 import dev.gigaherz.codegen.codetree.ClassData;
-import dev.gigaherz.codegen.codetree.expr.CodeBlock;
 import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
 import dev.gigaherz.codegen.codetree.expr.ExpressionBuilder;
 import dev.gigaherz.codegen.codetree.expr.ValueExpression;
@@ -261,15 +259,32 @@ public class ClassMaker
         }
 
         @Override
-        public DefineClass<T> replicateParentConstructors(Consumer<CodeBlock<Void, ?, T>> cb)
+        public DefineClass<T> replicateParentConstructors(Predicate<MethodInfo<Void>> filter, Consumer<CodeBlockInternal<Void, Void>> cb)
         {
-            throw new IllegalStateException("Not implemented");
-        }
+            DefineClass<T> cthis = this;
+            var csuper = ClassData.getClassInfo(superClass);
+            for(var superConstructor : csuper.constructors())
+            {
+                if (superConstructor.isStatic()) continue;
+                if (!filter.test(superConstructor)) continue;
 
-        @Override
-        public DefineClass<T> replicateParentConstructors(Predicate<MethodInfo<Void>> filter, Consumer<CodeBlock<Void, ?, T>> cb)
-        {
-            throw new IllegalStateException("Not implemented");
+                var ccon = cthis.constructor();
+
+                if (superConstructor.isPublic()) ccon = ccon.setPublic();
+                else if (superConstructor.isProtected()) ccon = ccon.setProtected();
+                else if (superConstructor.isPrivate()) ccon = ccon.setPrivate();
+
+                var cargs = ccon.setInstance();
+                for(ParamInfo<?> param : superConstructor.params())
+                {
+                    cargs.param(param.paramType().actualType()).withName(param.name());
+                }
+
+                cargs.implementation(cb);
+
+                cthis = cargs.finish();
+            }
+            return cthis;
         }
 
         @Override
@@ -385,7 +400,7 @@ public class ClassMaker
         @Override
         public Class<? super T> getRawType()
         {
-            throw new IllegalStateException("Not implemented");
+            throw new IllegalStateException("Cannot get the actual type from a ClassMaker, please use make() to generate an actual class first.");
         }
 
         @Override
@@ -652,7 +667,7 @@ public class ClassMaker
             protected final String name;
             protected final TypeToken<R> returnType;
             protected int modifiers;
-            protected Consumer<CodeBlockInternal<R, Void, R>> impl;
+            protected Consumer<CodeBlockInternal<R, R>> impl;
 
 
             public MethodImpl(String name, TypeToken<R> returnType)
@@ -739,7 +754,7 @@ public class ClassMaker
             }
 
             @Override
-            public DefineClass<T> implementation(Consumer<CodeBlockInternal<R, Void, R>> code)
+            public DefineClass<T> implementation(Consumer<CodeBlockInternal<R, R>> code)
             {
                 this.impl = code;
                 return this;
@@ -849,7 +864,7 @@ public class ClassMaker
                 }
 
                 @Override
-                public DefineClass<T> implementation(Consumer<CodeBlockInternal<R, Void, R>> code)
+                public DefineClass<T> implementation(Consumer<CodeBlockInternal<R, R>> code)
                 {
                     return MethodImpl.this.implementation(code);
                 }

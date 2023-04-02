@@ -16,7 +16,7 @@ public class LogicExpression<B> extends BooleanExpressionImpl<B>
     private final ValueExpression<?, B> first;
     private final ValueExpression<?, B> second;
 
-    public LogicExpression(CodeBlockInternal<B, ?, ?> cb, ComparisonType comparisonType, ValueExpression<?, B> first, ValueExpression<?, B> second)
+    public LogicExpression(CodeBlockInternal<B, ?> cb, ComparisonType comparisonType, ValueExpression<?, B> first, ValueExpression<?, B> second)
     {
         super(cb);
         this.comparisonType = comparisonType;

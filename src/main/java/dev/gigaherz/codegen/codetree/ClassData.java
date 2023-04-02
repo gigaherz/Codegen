@@ -23,7 +23,7 @@ public class ClassData<T> implements ClassInfo<T>
     public final TypeToken<? super T> superClass;
     public final TypeToken<?> thisType;
 
-    public final List<MethodInfo<?>> constructors = Lists.newArrayList();
+    public final List<MethodInfo<Void>> constructors = Lists.newArrayList();
     public final List<MethodInfo<?>> methods = Lists.newArrayList();
     public final List<FieldInfo<?>> fields = Lists.newArrayList();
 
@@ -50,7 +50,7 @@ public class ClassData<T> implements ClassInfo<T>
     }
 
     @Override
-    public List<dev.gigaherz.codegen.api.codetree.info.MethodInfo<?>> constructors()
+    public List<dev.gigaherz.codegen.api.codetree.info.MethodInfo<Void>> constructors()
     {
         return this.constructors;
     }

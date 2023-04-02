@@ -20,7 +20,7 @@ public class MethodCallExpression<R, B> extends ValueExpressionImpl<R, B>
     private final MethodInfo<R> method;
     private final List<ValueExpression<?, B>> lValues;
 
-    public MethodCallExpression(CodeBlockInternal<B, ?, ?> cb, @Nullable ValueExpression<?, B> objRef, MethodInfo<R> method, List<ValueExpression<?, B>> lValues)
+    public MethodCallExpression(CodeBlockInternal<B, ?> cb, @Nullable ValueExpression<?, B> objRef, MethodInfo<R> method, List<ValueExpression<?, B>> lValues)
     {
         super(cb);
         this.objRef = objRef;

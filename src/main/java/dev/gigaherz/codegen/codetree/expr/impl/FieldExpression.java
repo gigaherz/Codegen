@@ -13,7 +13,7 @@ public class FieldExpression<T, B> extends ValueExpressionImpl<T, B>
     private final ValueExpression<?, B> objRef;
     private final FieldInfo<?> field;
 
-    public FieldExpression(CodeBlockInternal<B, ?, ?> cb, ValueExpression<?, B> objRef, FieldInfo<?> field)
+    public FieldExpression(CodeBlockInternal<B, ?> cb, ValueExpression<?, B> objRef, FieldInfo<?> field)
     {
         super(cb);
         this.objRef = objRef;

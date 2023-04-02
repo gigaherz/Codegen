@@ -10,9 +10,9 @@ import org.objectweb.asm.Opcodes;
 public class Return extends InstructionSource
 {
     private final TypeToken<?> returnType;
-    private final CodeBlockInternal<?, ?, ?> cb;
+    private final CodeBlockInternal<?, ?> cb;
 
-    public Return(CodeBlockInternal<?, ?, ?> cb, TypeToken<?> returnType)
+    public Return(CodeBlockInternal<?, ?> cb, TypeToken<?> returnType)
     {
         this.cb = cb;
         this.returnType = returnType;

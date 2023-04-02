@@ -6,7 +6,7 @@ import dev.gigaherz.codegen.codetree.expr.LRef;
 @SuppressWarnings("UnstableApiUsage")
 public abstract class LRefImpl<T, B> extends ExprBase<B> implements LRef<T>
 {
-    public LRefImpl(CodeBlockInternal<B, ?, ?> cb)
+    public LRefImpl(CodeBlockInternal<B, ?> cb)
     {
         super(cb);
     }

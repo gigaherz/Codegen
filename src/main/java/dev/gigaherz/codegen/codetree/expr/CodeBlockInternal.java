@@ -11,13 +11,13 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 @SuppressWarnings("UnstableApiUsage")
-public interface CodeBlockInternal<B, P, M> extends CodeBlock<B, P, M>
+public interface CodeBlockInternal<B, M> extends CodeBlock<B, M>
 {
     LRef<?> fieldRef(ValueExpression<?, B> objRef, FieldInfo<?> fieldInfo);
 
     <T> ValueExpression<T, B> field(ValueExpression<?, B> objRef, FieldInfo<?> field);
 
-    CodeBlock<B, P, M> superCall(MethodInfo<?> method, List<ValueExpression<?, B>> values);
+    CodeBlock<B, M> superCall(MethodInfo<?> method, List<ValueExpression<?, B>> values);
 
     <R> ValueExpression<R, B> methodCall(ValueExpression<?, B> objRef, MethodInfo<R> method, List<ValueExpression<?, B>> values);
 
@@ -37,7 +37,7 @@ public interface CodeBlockInternal<B, P, M> extends CodeBlock<B, P, M>
 
     void pushStack(TypeProxy<?> returnType);
 
-    <T> CodeBlockInternal<T, B, M> childBlock();
+    <T> CodeBlockInternal<T, M> childBlock();
 
     boolean isEmpty();
 

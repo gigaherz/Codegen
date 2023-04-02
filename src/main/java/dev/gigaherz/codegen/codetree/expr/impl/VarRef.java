@@ -11,7 +11,7 @@ public class VarRef<T, B> extends LRefImpl<T, B>
 {
     private final LocalVariable<T> localVariable;
 
-    public VarRef(CodeBlockInternal<B, ?, ?> cb, LocalVariable<T> localVariable)
+    public VarRef(CodeBlockInternal<B, ?> cb, LocalVariable<T> localVariable)
     {
         super(cb);
 

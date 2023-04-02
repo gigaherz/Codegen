@@ -201,7 +201,7 @@ public interface ExpressionBuilder<B, M>
 
     <C> ValueExpression<C, B> iif(BooleanExpression<B> condition, ValueExpression<C, B> trueBranch, ValueExpression<C, B> falseBranch);
 
-    <T> ValueExpression<T, B> iif(BooleanExpression<B> condition, Consumer<CodeBlock<T, ?, M>> trueBranch, Consumer<CodeBlock<T, ?, M>> falseBranch);
+    <T> ValueExpression<T, B> iif(BooleanExpression<B> condition, Consumer<CodeBlock<T, M>> trueBranch, Consumer<CodeBlock<T, M>> falseBranch);
 
     BooleanExpression<B> gt(ValueExpression<?, B> x, ValueExpression<?, B> y);
 

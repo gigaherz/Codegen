@@ -12,7 +12,7 @@ public class UnaryOperator<R, B> extends ValueExpressionImpl<R, B>
     private final int opcode;
     private final ValueExpression<R, B> value;
 
-    public UnaryOperator(CodeBlockInternal<B, ?, ?> cb, int opcode, ValueExpression<R, B> value)
+    public UnaryOperator(CodeBlockInternal<B, ?> cb, int opcode, ValueExpression<R, B> value)
     {
         super(cb);
         this.opcode = opcode;

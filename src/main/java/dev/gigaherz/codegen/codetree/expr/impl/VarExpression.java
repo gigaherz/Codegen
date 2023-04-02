@@ -12,7 +12,7 @@ public class VarExpression<T, B> extends ValueExpressionImpl<T, B>
 {
     private final LocalVariable<T> localVariable;
 
-    public VarExpression(CodeBlockInternal<B, ?, ?> cb, LocalVariable<T> localVariable)
+    public VarExpression(CodeBlockInternal<B, ?> cb, LocalVariable<T> localVariable)
     {
         super(cb);
         this.localVariable = localVariable;

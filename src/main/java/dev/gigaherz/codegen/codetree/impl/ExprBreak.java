@@ -8,11 +8,11 @@ import org.objectweb.asm.Opcodes;
 
 public class ExprBreak extends InstructionSource
 {
-    private final CodeBlockInternal<?, ?, ?> cb;
+    private final CodeBlockInternal<?, ?> cb;
 
     private final ValueExpression<?, ?> value;
 
-    public ExprBreak(CodeBlockInternal<?, ?, ?> cb, ValueExpression<?, ?> value)
+    public ExprBreak(CodeBlockInternal<?, ?> cb, ValueExpression<?, ?> value)
     {
         this.cb = cb;
         this.value = value;

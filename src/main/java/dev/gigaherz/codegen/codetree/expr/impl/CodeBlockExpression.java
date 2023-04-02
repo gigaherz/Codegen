@@ -7,9 +7,9 @@ import org.objectweb.asm.MethodVisitor;
 @SuppressWarnings("UnstableApiUsage")
 public class CodeBlockExpression<B, P> extends ValueExpressionImpl<B, P>
 {
-    private final CodeBlockInternal<B, P, ?> thisBlock;
+    private final CodeBlockInternal<B, ?> thisBlock;
 
-    public CodeBlockExpression(CodeBlockInternal<P, ?, ?> cb, CodeBlockInternal<B, P, ?> childCb)
+    public CodeBlockExpression(CodeBlockInternal<P, ?> cb, CodeBlockInternal<B, ?> childCb)
     {
         super(cb);
         this.thisBlock = childCb;

@@ -13,7 +13,7 @@ import java.util.function.Function;
 @SuppressWarnings("UnstableApiUsage")
 public abstract class ValueExpressionImpl<T, B> extends ExprBase<B> implements ValueExpression<T, B>
 {
-    public ValueExpressionImpl(CodeBlockInternal<B, ?, ?> cb)
+    public ValueExpressionImpl(CodeBlockInternal<B, ?> cb)
     {
         super(cb);
     }

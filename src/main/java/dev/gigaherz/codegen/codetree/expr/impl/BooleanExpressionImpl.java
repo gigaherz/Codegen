@@ -9,7 +9,7 @@ public abstract class BooleanExpressionImpl<B> extends ValueExpressionImpl<Boole
 {
     public static final TypeToken<Boolean> BOOLEAN_TYPE_TOKEN = TypeToken.of(boolean.class);
 
-    public BooleanExpressionImpl(CodeBlockInternal<B, ?, ?> cb)
+    public BooleanExpressionImpl(CodeBlockInternal<B, ?> cb)
     {
         super(cb);
     }

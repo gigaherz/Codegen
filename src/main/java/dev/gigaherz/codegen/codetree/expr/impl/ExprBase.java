@@ -5,14 +5,14 @@ import dev.gigaherz.codegen.codetree.expr.Expr;
 
 public abstract class ExprBase<R> implements Expr<R>
 {
-    protected final CodeBlockInternal<R, ?, ?> cb;
+    protected final CodeBlockInternal<R, ?> cb;
 
-    public ExprBase(CodeBlockInternal<R, ?, ?> cb)
+    public ExprBase(CodeBlockInternal<R, ?> cb)
     {
         this.cb = cb;
     }
 
-    public CodeBlockInternal<R, ?, ?> block()
+    public CodeBlockInternal<R, ?> block()
     {
         return cb;
     }

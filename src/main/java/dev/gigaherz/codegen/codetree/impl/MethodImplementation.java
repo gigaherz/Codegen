@@ -35,7 +35,7 @@ public class MethodImplementation<R>
     public int maxStack = 0;
 
     private final MethodInfo<R> methodInfo;
-    private final CodeBlockInternal<R, Void, R> rootBlock;
+    private final CodeBlockInternal<R, R> rootBlock;
 
     public int stackSize = 0;
     public int localsSize = 0;
@@ -111,9 +111,11 @@ public class MethodImplementation<R>
         return methodInfo;
     }
 
-    public void defineLocal(String name, TypeProxy<?> type)
+    public int defineLocal(String name, TypeProxy<?> type)
     {
+        int index = localsSize;
         localsSize += makeLocal(localsSize, type, name);
+        return index;
     }
 
     private int makeLocal(int cLocal, TypeProxy<?> type, @Nullable String name)
@@ -514,7 +516,7 @@ public class MethodImplementation<R>
         return new MethodCallExpression<>(value.block(), null, new MethodLookup<>(ClassData.getClassInfo(target), "valueOf").withParam(source).result(), List.of(value));
     }
 
-    public CodeBlockInternal<R, Void, R> rootBlock()
+    public CodeBlockInternal<R, R> rootBlock()
     {
         return rootBlock;
     }

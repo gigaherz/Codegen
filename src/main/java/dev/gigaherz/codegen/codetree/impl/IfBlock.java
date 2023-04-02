@@ -11,12 +11,12 @@ import java.util.function.Consumer;
 
 public class IfBlock<T, P, R> extends InstructionSource
 {
-    private final CodeBlockInternal<P, ?, R> cb;
+    private final CodeBlockInternal<P, R> cb;
     private final BooleanExpression<?> condition;
-    private final Consumer<CodeBlock<T, P, R>> trueBranch;
-    private final Consumer<CodeBlock<T, P, R>> falseBranch;
+    private final Consumer<CodeBlock<T, R>> trueBranch;
+    private final Consumer<CodeBlock<T, R>> falseBranch;
 
-    public IfBlock(CodeBlockInternal<P, ?, R> cb, BooleanExpression<?> condition, Consumer<CodeBlock<T, P, R>> trueBranch, Consumer<CodeBlock<T, P, R>> falseBranch)
+    public IfBlock(CodeBlockInternal<P, R> cb, BooleanExpression<?> condition, Consumer<CodeBlock<T, R>> trueBranch, Consumer<CodeBlock<T, R>> falseBranch)
     {
         this.cb = cb;
         this.condition = condition;

@@ -12,7 +12,7 @@ public class NotExpression<B> extends BooleanExpressionImpl<B>
 {
     private final ValueExpression<?, B> first;
 
-    public NotExpression(CodeBlockInternal<B, ?, ?> cb, ValueExpression<?, B> first)
+    public NotExpression(CodeBlockInternal<B, ?> cb, ValueExpression<?, B> first)
     {
         super(cb);
         this.first = first;

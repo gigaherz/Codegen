@@ -4,9 +4,9 @@ import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.api.codetree.info.ClassInfo;
 import dev.gigaherz.codegen.api.codetree.info.MethodInfo;
 import dev.gigaherz.codegen.codetree.expr.CodeBlock;
+import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
 
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 @SuppressWarnings("UnstableApiUsage")
@@ -43,13 +43,7 @@ public interface FinishToClass<T> extends Finishable<ClassDef<T>>, DefineClass<T
     }
 
     @Override
-    default DefineClass<T> replicateParentConstructors(Consumer<CodeBlock<Void,?,T>> cb)
-    {
-        return finish().replicateParentConstructors(cb);
-    }
-
-    @Override
-    default DefineClass<T> replicateParentConstructors(Predicate<MethodInfo<Void>> filter, Consumer<CodeBlock<Void,?,T>> cb)
+    default DefineClass<T> replicateParentConstructors(Predicate<MethodInfo<Void>> filter, Consumer<CodeBlockInternal<Void, Void>> cb)
     {
         return finish().replicateParentConstructors(filter, cb);
     }

@@ -14,7 +14,7 @@ public class AssignExpression<T, S, B> extends ValueExpressionImpl<T, B>
     LRef<T> target;
     ValueExpression<S, B> value;
 
-    public AssignExpression(CodeBlockInternal<B, ?, ?> cb, LRef<T> target, ValueExpression<S, B> value)
+    public AssignExpression(CodeBlockInternal<B, ?> cb, LRef<T> target, ValueExpression<S, B> value)
     {
         super(cb);
         this.target = target;

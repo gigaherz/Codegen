@@ -16,7 +16,7 @@ public class ConditionalExpression<T, B> extends ValueExpressionImpl<T, B>
     private final ValueExpression<T, B> trueBranch;
     private final ValueExpression<T, B> falseBranch;
 
-    public ConditionalExpression(CodeBlockInternal<B, ?, ?> cb, BooleanExpression<B> condition, ValueExpression<T, B> trueBranch, ValueExpression<T, B> falseBranch)
+    public ConditionalExpression(CodeBlockInternal<B, ?> cb, BooleanExpression<B> condition, ValueExpression<T, B> trueBranch, ValueExpression<T, B> falseBranch)
     {
         super(cb);
         this.condition = condition;

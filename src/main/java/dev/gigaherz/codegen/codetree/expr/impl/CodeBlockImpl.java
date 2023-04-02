@@ -7,6 +7,7 @@ import dev.gigaherz.codegen.api.VarToken;
 import dev.gigaherz.codegen.api.codetree.info.FieldInfo;
 import dev.gigaherz.codegen.api.codetree.info.MethodInfo;
 import dev.gigaherz.codegen.api.codetree.info.ParamInfo;
+import dev.gigaherz.codegen.codetree.LocalVariableDef;
 import dev.gigaherz.codegen.codetree.MethodLookup;
 import dev.gigaherz.codegen.codetree.expr.*;
 import dev.gigaherz.codegen.codetree.impl.*;
@@ -15,29 +16,28 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("UnstableApiUsage")
-public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, P, M>
+public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
 {
     @Nullable
-    private final CodeBlock<P, ?, M> parentBlock;
+    private final CodeBlock<P, M> parentBlock;
     private TypeToken<?> returnType;
     private final MethodImplementation<M> owner;
     private final List<InstructionSource> instructions = Lists.newArrayList();
+    private final Map<String, LocalVariable<?>> locals = new HashMap<>();
 
-    public CodeBlockImpl(MethodImplementation<M> owner, @Nullable CodeBlock<P, ?, M> parentBlock)
+    public CodeBlockImpl(MethodImplementation<M> owner, @Nullable CodeBlock<P, M> parentBlock)
     {
         this.owner = owner;
         this.parentBlock = parentBlock;
     }
 
-    public CodeBlockImpl(MethodImplementation<M> owner, @Nullable CodeBlock<P, ?, M> parentBlock, TypeToken<B> returnType)
+    public CodeBlockImpl(MethodImplementation<M> owner, @Nullable CodeBlock<P, M> parentBlock, TypeToken<B> returnType)
     {
         this(owner, parentBlock);
         this.returnType = returnType;
@@ -102,9 +102,13 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, P, M>
     }
 
     @Override
-    public CodeBlock<B, P, M> local(String name, TypeToken<?> varType)
+    public CodeBlock<B, M> local(String name, TypeToken<?> varType)
     {
-        throw new IllegalStateException("Not implemented");
+        if (locals.containsKey(name))
+            throw new IllegalStateException("A local with name '" + name + "' has already been declared.");
+        var index = owner.defineLocal(name, TypeProxy.of(varType));
+        locals.put(name, owner.getLocalVariable(index));
+        return this;
     }
 
     public void pushStack(TypeToken<?> type)
@@ -127,31 +131,31 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, P, M>
         owner.popStack();
     }
 
-    public CodeBlockInternal<B, P, M> getThis()
+    public CodeBlockInternal<B, M> getThis()
     {
         instructions.add(new LocalLoad(owner, 0));
         return this;
     }
 
-    public CodeBlockInternal<B, P, M> getLocal(String localName)
+    public CodeBlockInternal<B, M> getLocal(String localName)
     {
         instructions.add(new LocalLoad(owner, localName));
         return this;
     }
 
-    public CodeBlockInternal<B, P, M> setLocal(String localName)
+    public CodeBlockInternal<B, M> setLocal(String localName)
     {
         instructions.add(new LocalStore(owner, localName));
         return this;
     }
 
-    public CodeBlockInternal<B, P, M> getField(String fieldName)
+    public CodeBlockInternal<B, M> getField(String fieldName)
     {
         instructions.add(new FieldLoad(owner, null, fieldName));
         return this;
     }
 
-    public CodeBlockInternal<B, P, M> setField(String fieldName)
+    public CodeBlockInternal<B, M> setField(String fieldName)
     {
         instructions.add(new FieldStore(owner, null, fieldName));
         return this;
@@ -184,14 +188,14 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, P, M>
     }
 
     @Override
-    public CodeBlock<B, P, M> breakLoop()
+    public CodeBlock<B, M> breakLoop()
     {
         instructions.add(new SkipLoop(true));
         return this;
     }
 
     @Override
-    public CodeBlock<B, P, M> continueLoop()
+    public CodeBlock<B, M> continueLoop()
     {
         instructions.add(new SkipLoop(false));
         return this;
@@ -216,7 +220,7 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, P, M>
     }
 
     @Override
-    public CodeBlock<B, P, M> assign(LRef<?> target, ValueExpression<?, B> value)
+    public CodeBlock<B, M> assign(LRef<?> target, ValueExpression<?, B> value)
     {
         value = owner.applyAutomaticCasting(target.targetType(), value);
         if (target.targetType().isSupertypeOf(value.effectiveType()))
@@ -225,6 +229,22 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, P, M>
             return this;
         }
         throw new IllegalStateException("Cannot assign field of type " + target.targetType() + " from expression of type " + value.effectiveType());
+    }
+
+    @Override
+    public LRef<?> localRef(String localName)
+    {
+        var local = locals.get(localName);
+        if (local == null)
+        {
+            if (parentBlock != null)
+            {
+                return parentBlock.localRef(localName);
+            }
+
+            throw new IllegalStateException("Undefined local " + localName);
+        }
+        return new VarRef<>(this, local);
     }
 
     @Override
@@ -237,12 +257,6 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, P, M>
     public LRef<?> fieldRef(ValueExpression<?, B> objRef, String fieldName)
     {
         return new FieldRef<>(this, objRef, owner.methodInfo().owner().getField(fieldName));
-    }
-
-    @Override
-    public LRef<?> localRef(String localName)
-    {
-        throw new IllegalStateException("Not implemented");
     }
 
     @Override
@@ -306,14 +320,14 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, P, M>
     }
 
     @Override
-    public CodeBlock<B, P, M> exec(ValueExpression<?, B> value)
+    public CodeBlock<B, M> exec(ValueExpression<?, B> value)
     {
         instructions.add(new ExecuteExpression(owner, value));
         return this;
     }
 
     @Override
-    public CodeBlock<B, P, M> autoSuperCall()
+    public CodeBlock<B, M> autoSuperCall()
     {
         List<ValueExpression<?, B>> locals = owner().methodInfo().params().stream()
                 .map(p -> localVar(p.name()))
@@ -322,13 +336,13 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, P, M>
     }
 
     @Override
-    public CodeBlock<B, P, M> superCall(List<ValueExpression<?, B>> values)
+    public CodeBlock<B, M> superCall(List<ValueExpression<?, B>> values)
     {
         return superCall(ml -> ml, values);
     }
 
     @Override
-    public final CodeBlock<B, P, M> superCall(Function<MethodLookup<?>, MethodLookup<?>> methodLookup, List<ValueExpression<?, B>> values)
+    public final CodeBlock<B, M> superCall(Function<MethodLookup<?>, MethodLookup<?>> methodLookup, List<ValueExpression<?, B>> values)
     {
         var ml = new MethodLookup<>(owner.methodInfo().owner().superClass(), "<init>");
         ml = methodLookup.apply(ml);
@@ -336,7 +350,7 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, P, M>
     }
 
     @Override
-    public final CodeBlock<B, P, M> superCall(MethodInfo<?> method, List<ValueExpression<?, B>> values)
+    public final CodeBlock<B, M> superCall(MethodInfo<?> method, List<ValueExpression<?, B>> values)
     {
         if (!method.owner().thisType().actualType().equals(owner.methodInfo().owner().superClass()))
             throw new IllegalStateException("Super call must be a method or constructor of the immediate super class of this class.");
@@ -552,7 +566,7 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, P, M>
     }
 
     @Override
-    public <T> ValueExpression<T, B> iif(BooleanExpression<B> condition, Consumer<CodeBlock<T, ?, M>> trueBranch, Consumer<CodeBlock<T, ?, M>> falseBranch)
+    public <T> ValueExpression<T, B> iif(BooleanExpression<B> condition, Consumer<CodeBlock<T, M>> trueBranch, Consumer<CodeBlock<T, M>> falseBranch)
     {
         var tb = this.<T>childBlock();
         var fb = this.<T>childBlock();
@@ -563,38 +577,38 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, P, M>
         return new ConditionalExpression<>(this, condition, new CodeBlockExpression<>(this, tb), new CodeBlockExpression<>(this, fb));
     }
 
-    public <X> CodeBlockInternal<X, B, M> childBlock()
+    public <X> CodeBlockInternal<X, M> childBlock()
     {
         return new CodeBlockImpl<>(owner, this);
     }
 
     @Override
-    public CodeBlock<B, P, M> ifElse(BooleanExpression<?> condition, Consumer<CodeBlock<B, B, M>> trueBranch, Consumer<CodeBlock<B, B, M>> falseBranch)
+    public CodeBlock<B, M> ifElse(BooleanExpression<?> condition, Consumer<CodeBlock<B, M>> trueBranch, Consumer<CodeBlock<B, M>> falseBranch)
     {
         instructions.add(new IfBlock<>(this, condition, trueBranch, falseBranch));
         return this;
     }
 
     @Override
-    public CodeBlock<B, P, M> forLoop(String localName, TypeToken<?> varType, BooleanExpression<?> condition, ValueExpression<?, B> step, Consumer<CodeBlock<B, B, M>> body)
+    public CodeBlock<B, M> forLoop(String localName, TypeToken<?> varType, BooleanExpression<?> condition, ValueExpression<?, B> step, Consumer<CodeBlock<B, M>> body)
     {
         throw new IllegalStateException("Not implemented");
     }
 
     @Override
-    public <V, S extends V> CodeBlock<B, P, M> forEach(String localName, TypeToken<V> varType, ValueExpression<S, B> collection, Consumer<CodeBlock<B, B, M>> body)
+    public <V, S extends V> CodeBlock<B, M> forEach(String localName, TypeToken<V> varType, ValueExpression<S, B> collection, Consumer<CodeBlock<B, M>> body)
     {
         throw new IllegalStateException("Not implemented");
     }
 
     @Override
-    public <V, S extends V> CodeBlock<B, P, M> whileLoop(BooleanExpression<?> condition, Consumer<CodeBlock<B, B, M>> body)
+    public <V, S extends V> CodeBlock<B, M> whileLoop(BooleanExpression<?> condition, Consumer<CodeBlock<B, M>> body)
     {
         throw new IllegalStateException("Not implemented");
     }
 
     @Override
-    public <V, S extends V> CodeBlock<B, P, M> doWhile(Consumer<CodeBlock<B, B, M>> body, BooleanExpression<?> condition)
+    public <V, S extends V> CodeBlock<B, M> doWhile(Consumer<CodeBlock<B, M>> body, BooleanExpression<?> condition)
     {
         throw new IllegalStateException("Not implemented");
     }

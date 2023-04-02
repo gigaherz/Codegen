@@ -11,7 +11,7 @@ public class NoopConversion<R, B> extends ValueExpressionImpl<R, B>
     private final TypeToken<R> targetType;
     private final ValueExpression<?, B> value;
 
-    public NoopConversion(CodeBlockInternal<B, ?, ?> cb, TypeToken<R> targetType, ValueExpression<?, B> value)
+    public NoopConversion(CodeBlockInternal<B, ?> cb, TypeToken<R> targetType, ValueExpression<?, B> value)
     {
         super(cb);
         this.targetType = targetType;

@@ -44,9 +44,23 @@ public interface MethodInfo<R>
         return null;
     }
 
-
     default boolean isStatic()
     {
         return Modifier.isStatic(modifiers());
+    }
+
+    default boolean isPublic()
+    {
+        return Modifier.isPublic(modifiers());
+    }
+
+    default boolean isPrivate()
+    {
+        return Modifier.isPrivate(modifiers());
+    }
+
+    default boolean isProtected()
+    {
+        return Modifier.isProtected(modifiers());
     }
 }

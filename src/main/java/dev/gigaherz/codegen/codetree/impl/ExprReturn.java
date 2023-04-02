@@ -9,12 +9,12 @@ import org.objectweb.asm.MethodVisitor;
 @SuppressWarnings("UnstableApiUsage")
 public class ExprReturn extends InstructionSource
 {
-    private final CodeBlock<?, ?, ?> cb;
+    private final CodeBlock<?, ?> cb;
     private final TypeToken<?> returnType;
 
     private final ValueExpression<?, ?> value;
 
-    public ExprReturn(CodeBlock<?, ?, ?> cb, TypeToken<?> returnType, ValueExpression<?, ?> value)
+    public ExprReturn(CodeBlock<?, ?> cb, TypeToken<?> returnType, ValueExpression<?, ?> value)
     {
         this.cb = cb;
         this.returnType = returnType;
