@@ -366,6 +366,12 @@ public class ClassMaker
         }
 
         @Override
+        public String getClassNameWithoutPackage()
+        {
+            return name;
+        }
+
+        @Override
         public ClassInfo<T> classInfo()
         {
             return this;

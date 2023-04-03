@@ -33,6 +33,8 @@ public interface TypeProxy<T>
 
     String getName();
 
+    String getClassNameWithoutPackage();
+
     ClassInfo<T> classInfo();
 
     default String getDescriptor()
@@ -147,6 +149,12 @@ public interface TypeProxy<T>
         public String getName()
         {
             return actualType().getRawType().getName();
+        }
+
+        @Override
+        public String getClassNameWithoutPackage()
+        {
+            return type.getRawType().getTypeName();
         }
 
         @Override

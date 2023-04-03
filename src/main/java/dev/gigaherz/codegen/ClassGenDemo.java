@@ -119,7 +119,7 @@ public class ClassGenDemo
 
         try
         {
-            var filename = builder.finish().getName() + ".class";
+            var filename = builder.finish().getClassNameWithoutPackage() + ".class";
             var filePath = Path.of(filename);
             System.out.println("Saving class to file " + filePath.toAbsolutePath());
             Files.write(filePath, builder.makeClass());
