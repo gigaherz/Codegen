@@ -16,10 +16,16 @@ public interface ValueExpression<T, B> extends Expr<B>
 
     TypeProxy<T> proxyType();
 
+    default <T1> ValueExpression<T1, B> cast(Class<T1> targetClass) {
+        return cast(TypeToken.of(targetClass));
+    }
+    <T1> ValueExpression<T1, B> cast(TypeToken<T1> targetClass);
+    BooleanExpression<B> castToBool();
+
     LRef<?> fieldRef(String fieldName);
 
-    <T> ValueExpression<T, B> field(String fieldName);
-    <T> ValueExpression<T, B> field(FieldToken<T> fieldToken);
+    <F> ValueExpression<F, B> field(String fieldName);
+    <F> ValueExpression<F, B> field(FieldToken<F> fieldToken);
 
     default <R> ValueExpression<R, B> methodCall(String methodName)
     {

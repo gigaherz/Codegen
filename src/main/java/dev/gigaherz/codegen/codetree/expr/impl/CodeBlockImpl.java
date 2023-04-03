@@ -90,9 +90,10 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
     @Override
     public void afterExpressionCompile(boolean needsResult)
     {
-        var diff = (needsResult ? 1 : 0);
-        if ((owner.peekStackDepth() - beforeStack.pop()) != diff)
-            throw new IllegalStateException("Stack at the end of an expression must be "+diff+" more than it was at the start");
+        var expectedDiff = (needsResult ? 1 : 0);
+        var actualDiff = (owner.peekStackDepth() - beforeStack.pop());
+        if (actualDiff != expectedDiff)
+            throw new IllegalStateException("Stack at the end of an expression must be "+expectedDiff+" more than it was at the start, but it was " + actualDiff);
     }
 
     @Override
@@ -414,18 +415,6 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
     public MethodLookup<?> method(String name)
     {
         return new MethodLookup<>(owner.methodInfo().owner(), name);
-    }
-
-    @Override
-    public void emitComparison(MethodVisitor mv, ComparisonType comparisonType, ValueExpression<?, B> first, ValueExpression<?, B> second, Runnable emitTrueBranch, Runnable emitFalseBranch)
-    {
-
-    }
-
-    @Override
-    public void emitConditional(MethodVisitor mv, ValueExpression<?, B> first, Runnable trueBranch, Runnable falseBranch)
-    {
-
     }
 
     @Override

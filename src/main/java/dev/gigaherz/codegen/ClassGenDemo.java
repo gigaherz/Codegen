@@ -9,9 +9,9 @@ public class ClassGenDemo
 {
     public static class Test implements Vector3I
     {
-        protected final int x;
-        protected final int y;
-        protected final int z;
+        private final int x;
+        private final int y;
+        private final int z;
 
         public Test(int x, int y, int z)
         {
@@ -37,7 +37,9 @@ public class ClassGenDemo
 
         public int maxCoord()
         {
-            if (x > y && x > z)
+            boolean temp = x > y && x > z;
+            temp = temp;
+            if (temp)
             {
                 return x;
             }
@@ -106,8 +108,11 @@ public class ClassGenDemo
                 .setPublic().setInstance().implementation(cb -> cb.returnVal(cb.thisVar().field("z")))
                 .method("maxCoord", int.class)
                 .setPublic().setInstance().implementation(cb -> cb
+                        .local("test", boolean.class)
+                        .assign(cb.localRef("test"), cb.and(cb.gt(cb.field("x"), cb.field("y")), cb.gt(cb.field("x"), cb.field("z"))))
+                        .assign(cb.localRef("test"), cb.localVar("test"))
                         .ifElse(
-                                cb.and(cb.gt(cb.field("x"), cb.field("y")), cb.gt(cb.field("x"), cb.field("z"))),
+                                cb.localVar("test").castToBool(),
                                 ct -> ct.returnVal(ct.field("x")),
                                 cf -> cf.returnVal(cf.iif(cf.gt(cf.field("y"), cf.field("z")), cf.field("y"), cf.field("z")))
                         ));
@@ -116,7 +121,7 @@ public class ClassGenDemo
         {
             var filename = builder.finish().getName() + ".class";
             var filePath = Path.of(filename);
-            System.out.println("Saving class to file " + filePath.toAbsolutePath().toString());
+            System.out.println("Saving class to file " + filePath.toAbsolutePath());
             Files.write(filePath, builder.makeClass());
         }
         catch (IOException e)

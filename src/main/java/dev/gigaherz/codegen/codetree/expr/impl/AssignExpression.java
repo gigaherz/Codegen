@@ -48,7 +48,6 @@ public class AssignExpression<T, S, B> extends ValueExpressionImpl<T, B>
         }
 
         target.compileAfter(mv);
-
         cb.popStack();
 
         cb.afterExpressionCompile(needsResult);

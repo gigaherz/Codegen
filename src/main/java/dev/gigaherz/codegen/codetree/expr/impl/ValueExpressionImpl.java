@@ -1,7 +1,9 @@
 package dev.gigaherz.codegen.codetree.expr.impl;
 
+import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.api.FieldToken;
 import dev.gigaherz.codegen.codetree.MethodLookup;
+import dev.gigaherz.codegen.codetree.expr.BooleanExpression;
 import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
 import dev.gigaherz.codegen.codetree.expr.LRef;
 import dev.gigaherz.codegen.codetree.expr.ValueExpression;
@@ -22,6 +24,18 @@ public abstract class ValueExpressionImpl<T, B> extends ExprBase<B> implements V
     public TypeProxy<T> proxyType()
     {
         return TypeProxy.of(effectiveType());
+    }
+
+    @Override
+    public <T1> ValueExpression<T1, B> cast(TypeToken<T1> targetClass)
+    {
+        return new CastExpression<>(cb, this, targetClass);
+    }
+
+    @Override
+    public BooleanExpression<B> castToBool()
+    {
+        return new CastExpression.Bool(cb, this);
     }
 
     @Override

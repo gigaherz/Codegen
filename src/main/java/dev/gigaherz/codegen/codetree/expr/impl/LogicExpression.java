@@ -30,11 +30,17 @@ public class LogicExpression<B> extends BooleanExpressionImpl<B>
         cb.beforeExpressionCompile();
         if (needsResult)
         {
-            cb.emitComparison(mv, comparisonType, first, second, () -> {
-                mv.visitInsn(Opcodes.ICONST_1);
-            }, () -> {
-                mv.visitInsn(Opcodes.ICONST_0);
-            });
+            var jumpFalse = new Label();
+            var jumpEnd = new Label();
+
+            compile(mv, null, jumpFalse);
+
+            mv.visitInsn(Opcodes.ICONST_1);
+            mv.visitJumpInsn(Opcodes.GOTO, jumpEnd);
+            mv.visitLabel(jumpFalse);
+            mv.visitInsn(Opcodes.ICONST_0);
+            mv.visitLabel(jumpEnd);
+            cb.pushStack(1);
         }
         cb.afterExpressionCompile(needsResult);
     }
@@ -45,6 +51,7 @@ public class LogicExpression<B> extends BooleanExpressionImpl<B>
         if (jumpFalse == null && jumpTrue == null)
             throw new IllegalStateException("Comparison compile called with both labels null");
 
+        cb.beforeExpressionCompile();
         if (first instanceof BooleanExpressionImpl b1 && second instanceof BooleanExpressionImpl b2)
         {
             switch (comparisonType)
@@ -269,6 +276,7 @@ public class LogicExpression<B> extends BooleanExpressionImpl<B>
                 }
             }
         }
+        cb.afterExpressionCompile(false);
     }
 }
 

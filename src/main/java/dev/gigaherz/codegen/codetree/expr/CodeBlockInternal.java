@@ -21,10 +21,6 @@ public interface CodeBlockInternal<B, M> extends CodeBlock<B, M>
 
     <R> ValueExpression<R, B> methodCall(ValueExpression<?, B> objRef, MethodInfo<R> method, List<ValueExpression<?, B>> values);
 
-    void emitComparison(MethodVisitor mv, ComparisonType comparisonType, ValueExpression<?, B> first, ValueExpression<?, B> second, Runnable emitTrueBranch, Runnable emitFalseBranch);
-
-    void emitConditional(MethodVisitor mv, ValueExpression<?, B> first, Runnable trueBranch, Runnable falseBranch);
-
     void popStack();
 
     void pushStack(int count);

@@ -34,5 +34,6 @@ public class VarRef<T, B> extends LRefImpl<T, B>
     public void compileAfter(MethodVisitor mv)
     {
         LocalStore.compile(localVariable, mv);
+        cb.popStack();
     }
 }
