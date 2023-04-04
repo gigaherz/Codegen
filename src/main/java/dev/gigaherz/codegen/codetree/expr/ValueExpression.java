@@ -8,6 +8,7 @@ import org.objectweb.asm.MethodVisitor;
 
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.ToIntFunction;
 
 @SuppressWarnings("UnstableApiUsage")
 public interface ValueExpression<T, B> extends Expr<B>
@@ -81,5 +82,5 @@ public interface ValueExpression<T, B> extends Expr<B>
 
     <R> ValueExpression<R, B> methodCall(String methodName, Function<MethodLookup<T>, MethodLookup<T>> methodLookup, List<ValueExpression<?, B>> values);
 
-    void compile(MethodVisitor mv, boolean needsResult);
+    void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult);
 }

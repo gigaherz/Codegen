@@ -6,6 +6,8 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
+import java.util.function.ToIntFunction;
+
 public class ExprBreak extends InstructionSource
 {
     private final CodeBlockInternal<?, ?> cb;
@@ -19,10 +21,10 @@ public class ExprBreak extends InstructionSource
     }
 
     @Override
-    public boolean compile(MethodVisitor mv, Label jumpEnd, boolean needsResult)
+    public boolean compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, Label jumpEnd, boolean needsResult)
     {
         mv.visitLabel(cb.owner().makeLabel());
-        value.compile(mv, needsResult);
+        value.compile(defineConstant, mv, needsResult);
         mv.visitJumpInsn(Opcodes.GOTO, jumpEnd);
         return true;
     }

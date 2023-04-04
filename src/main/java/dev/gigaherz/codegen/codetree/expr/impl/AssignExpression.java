@@ -8,13 +8,15 @@ import dev.gigaherz.codegen.codetree.impl.MethodImplementation;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
+import java.util.function.ToIntFunction;
+
 @SuppressWarnings("UnstableApiUsage")
-public class AssignExpression<T, S, B> extends ValueExpressionImpl<T, B>
+public class AssignExpression<T, B> extends ValueExpressionImpl<T, B>
 {
     LRef<T> target;
-    ValueExpression<S, B> value;
+    ValueExpression<T, B> value;
 
-    public AssignExpression(CodeBlockInternal<B, ?> cb, LRef<T> target, ValueExpression<S, B> value)
+    public AssignExpression(CodeBlockInternal<B, ?> cb, LRef<T> target, ValueExpression<T, B> value)
     {
         super(cb);
         this.target = target;
@@ -29,17 +31,17 @@ public class AssignExpression<T, S, B> extends ValueExpressionImpl<T, B>
 
     // TODO: special compile for inner assignments that need the value duplicated
     @Override
-    public void compile(MethodVisitor mv, boolean needsResult)
+    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult)
     {
         cb.beforeExpressionCompile();
 
-        target.compileBefore(mv);
+        target.compileBefore(defineConstant, mv);
 
         int valueSize = MethodImplementation.slotCount(value.effectiveType());
 
         cb.pushStack(valueSize);
 
-        value.compile(mv, true);
+        value.compile(defineConstant, mv, true);
 
         if (needsResult)
         {
@@ -47,7 +49,7 @@ public class AssignExpression<T, S, B> extends ValueExpressionImpl<T, B>
             mv.visitInsn(valueSize == 2 ? Opcodes.DUP2 : Opcodes.DUP);
         }
 
-        target.compileAfter(mv);
+        target.compileAfter(defineConstant, mv);
         cb.popStack();
 
         cb.afterExpressionCompile(needsResult);

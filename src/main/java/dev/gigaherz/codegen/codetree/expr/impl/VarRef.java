@@ -6,6 +6,8 @@ import dev.gigaherz.codegen.codetree.impl.LocalStore;
 import dev.gigaherz.codegen.codetree.impl.LocalVariable;
 import org.objectweb.asm.MethodVisitor;
 
+import java.util.function.ToIntFunction;
+
 @SuppressWarnings("UnstableApiUsage")
 public class VarRef<T, B> extends LRefImpl<T, B>
 {
@@ -25,13 +27,13 @@ public class VarRef<T, B> extends LRefImpl<T, B>
     }
 
     @Override
-    public void compileBefore(MethodVisitor mv)
+    public void compileBefore(ToIntFunction<Object> defineConstant, MethodVisitor mv)
     {
         // nothing needed before
     }
 
     @Override
-    public void compileAfter(MethodVisitor mv)
+    public void compileAfter(ToIntFunction<Object> defineConstant, MethodVisitor mv)
     {
         LocalStore.compile(localVariable, mv);
         cb.popStack();

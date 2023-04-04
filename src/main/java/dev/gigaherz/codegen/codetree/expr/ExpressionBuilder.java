@@ -31,6 +31,33 @@ public interface ExpressionBuilder<B, M>
     <T> ValueExpression<T, B> localVar(String varName);
     <T> ValueExpression<T, B> localVar(VarToken<T> varToken);
 
+    default <R, T> ValueExpression<R, B> thisCall(String methodName)
+    {
+        return thisCall(methodName, List.of());
+    }
+
+    default <R, T> ValueExpression<R, B> thisCall(String methodName, ValueExpression<?, B> val0)
+    {
+        return thisCall(methodName, List.of(val0));
+    }
+
+    default <R, T> ValueExpression<R, B> thisCall(String methodName, ValueExpression<?, B> val0, ValueExpression<?, B> val1)
+    {
+        return thisCall(methodName, List.of(val0, val1));
+    }
+
+    default <R, T> ValueExpression<R, B> thisCall(String methodName, ValueExpression<?, B> val0, ValueExpression<?, B> val1, ValueExpression<?, B> val2)
+    {
+        return thisCall(methodName, List.of(val0, val1, val2));
+    }
+
+    default <R, T> ValueExpression<R, B> thisCall(String methodName, ValueExpression<?, B> val0, ValueExpression<?, B> val1, ValueExpression<?, B> val2, ValueExpression<?, B> val3)
+    {
+        return thisCall(methodName, List.of(val0, val1, val2, val3));
+    }
+
+    <R, T> ValueExpression<R, B> thisCall(String methodName, List<ValueExpression<?, B>> values);
+
     default <R, T> ValueExpression<R, B> methodCall(ValueExpression<T, B> objRef, String methodName)
     {
         return methodCall(objRef, methodName, List.of());
@@ -220,4 +247,29 @@ public interface ExpressionBuilder<B, M>
     BooleanExpression<B> or(ValueExpression<?, B> a, ValueExpression<?, B> b);
 
     BooleanExpression<B> not(ValueExpression<?, B> a);
+
+    ValueExpression<?, B> add(ValueExpression<?, B> a, ValueExpression<?, B> b);
+    ValueExpression<?, B> sub(ValueExpression<?, B> a, ValueExpression<?, B> b);
+    ValueExpression<?, B> mul(ValueExpression<?, B> a, ValueExpression<?, B> b);
+    ValueExpression<?, B> div(ValueExpression<?, B> a, ValueExpression<?, B> b);
+    ValueExpression<?, B> mod(ValueExpression<?, B> a, ValueExpression<?, B> b);
+    ValueExpression<?, B> neg(ValueExpression<?, B> b);
+    ValueExpression<?, B> bitAnd(ValueExpression<?, B> a, ValueExpression<?, B> b);
+    ValueExpression<?, B> bitOr(ValueExpression<?, B> a, ValueExpression<?, B> b);
+    ValueExpression<?, B> bitXor(ValueExpression<?, B> a, ValueExpression<?, B> b);
+    ValueExpression<?, B> bitNot(ValueExpression<?, B> b);
+    ValueExpression<?, B> shiftLeft(ValueExpression<?, B> a, ValueExpression<?, B> b);
+    ValueExpression<?, B> shiftRight(ValueExpression<?, B> a, ValueExpression<?, B> b);
+    ValueExpression<?, B> shiftRightUnsigned(ValueExpression<?, B> a, ValueExpression<?, B> b);
+
+    ValueExpression<?, B> index(ValueExpression<?, B> array, ValueExpression<?, B> index);
+
+    BooleanExpression<B> literal(boolean val);
+    ValueExpression<Byte, B> literal(byte val);
+    ValueExpression<Short, B> literal(short val);
+    ValueExpression<Integer, B> literal(int val);
+    ValueExpression<Long, B> literal(long val);
+    ValueExpression<Float, B> literal(float val);
+    ValueExpression<Double, B> literal(double val);
+    ValueExpression<String, B> literal(String val);
 }

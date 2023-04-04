@@ -377,10 +377,33 @@ public class MethodImplementation<R>
         return tt.getRawType() == void.class;
     }
 
-    public <S, B> ValueExpression<?, B> applyAutomaticCasting(TypeToken<?> targetType, ValueExpression<S, B> value)
+    public TypeToken<?> computeArithmeticResultType(TypeToken<?> a, TypeToken<?> b)
+    {
+        var r1 = a.getRawType();
+        var r2 = b.getRawType();
+        var isInt1 = r1 == byte.class || r1 == short.class || r1 == int.class;
+        var isInt2 = r2 == byte.class || r2 == short.class || r2 == int.class;
+        if (isInt1 && isInt2)
+            return TypeToken.of(int.class);
+        if (r1 == long.class && isInt2 || r2 == long.class && isInt1)
+            return TypeToken.of(long.class);
+        if ((r1 == float.class && (r2 == float.class || isInt2)) || (r2 == float.class && isInt1))
+            return TypeToken.of(float.class);
+        if ((r1 == double.class && (r2 == double.class || r2 == float.class || isInt2)) || (r2 == double.class && (r1 == float.class || isInt1)))
+            return TypeToken.of(double.class);
+        return null;
+    }
+
+    public <T, S, B> ValueExpression<T, B> applyAutomaticCasting(TypeToken<T> targetType, ValueExpression<S, B> value)
     {
         var rt = targetType.getRawType();
         var rs = value.effectiveType().getRawType();
+
+        if (rt == rs || rt.isAssignableFrom(rs))
+        {
+            //noinspection unchecked
+            return (ValueExpression<T, B>) value;
+        }
 
         // numeric casting
         if (rt.isPrimitive() && rs.isPrimitive())
@@ -502,16 +525,16 @@ public class MethodImplementation<R>
             }
         }
 
-        // no conversion found, return original.
-        return value;
+        // no conversion found
+        throw new IllegalStateException("No boxing conversion found between '" + value.effectiveType() + "' and '" + targetType + "'");
     }
 
-    private <S, B> MethodCallExpression<?, B> makeUnboxingConversion(Class<S> source, ValueExpression<?, B> value, String name)
+    private <T, S, B> MethodCallExpression<T, B> makeUnboxingConversion(Class<S> source, ValueExpression<?, B> value, String name)
     {
         return new MethodCallExpression<>(value.block(), value, new MethodLookup<>(ClassData.getClassInfo(source), name).withParam(source).result(), List.of(value));
     }
 
-    private <S, T, B> MethodCallExpression<T, B> makeBoxingConversion(Class<T> target, Class<S> source, ValueExpression<?, B> value)
+    private <T0, T, S, B> MethodCallExpression<T0, B> makeBoxingConversion(Class<T> target, Class<S> source, ValueExpression<?, B> value)
     {
         return new MethodCallExpression<>(value.block(), null, new MethodLookup<>(ClassData.getClassInfo(target), "valueOf").withParam(source).result(), List.of(value));
     }

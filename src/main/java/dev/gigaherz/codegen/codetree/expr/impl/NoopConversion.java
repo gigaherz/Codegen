@@ -5,6 +5,8 @@ import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
 import dev.gigaherz.codegen.codetree.expr.ValueExpression;
 import org.objectweb.asm.MethodVisitor;
 
+import java.util.function.ToIntFunction;
+
 @SuppressWarnings("UnstableApiUsage")
 public class NoopConversion<R, B> extends ValueExpressionImpl<R, B>
 {
@@ -25,10 +27,10 @@ public class NoopConversion<R, B> extends ValueExpressionImpl<R, B>
     }
 
     @Override
-    public void compile(MethodVisitor mv, boolean needsResult)
+    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult)
     {
         cb.beforeExpressionCompile();
-        value.compile(mv, needsResult);
+        value.compile(defineConstant, mv, needsResult);
         cb.afterExpressionCompile(needsResult);
     }
 }

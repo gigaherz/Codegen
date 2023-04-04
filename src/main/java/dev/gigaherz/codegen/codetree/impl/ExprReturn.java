@@ -6,6 +6,8 @@ import dev.gigaherz.codegen.codetree.expr.ValueExpression;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 
+import java.util.function.ToIntFunction;
+
 @SuppressWarnings("UnstableApiUsage")
 public class ExprReturn extends InstructionSource
 {
@@ -22,10 +24,10 @@ public class ExprReturn extends InstructionSource
     }
 
     @Override
-    public boolean compile(MethodVisitor mv, Label jumpEnd, boolean needsResult)
+    public boolean compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, Label jumpEnd, boolean needsResult)
     {
         mv.visitLabel(cb.owner().makeLabel());
-        value.compile(mv, true);
+        value.compile(defineConstant, mv, true);
         Return.compileReturn(returnType, mv);
         return true;
     }

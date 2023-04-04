@@ -4,6 +4,8 @@ import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
 import org.objectweb.asm.MethodVisitor;
 
+import java.util.function.ToIntFunction;
+
 @SuppressWarnings("UnstableApiUsage")
 public class CodeBlockExpression<B, P> extends ValueExpressionImpl<B, P>
 {
@@ -22,10 +24,10 @@ public class CodeBlockExpression<B, P> extends ValueExpressionImpl<B, P>
     }
 
     @Override
-    public void compile(MethodVisitor mv, boolean needsResult)
+    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult)
     {
         cb.beforeExpressionCompile();
-        thisBlock.compile(mv, needsResult);
+        thisBlock.compile(defineConstant, mv, needsResult);
         cb.afterExpressionCompile(needsResult);
     }
 }

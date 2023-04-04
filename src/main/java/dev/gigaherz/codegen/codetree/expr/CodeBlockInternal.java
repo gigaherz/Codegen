@@ -9,6 +9,7 @@ import org.objectweb.asm.MethodVisitor;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.function.ToIntFunction;
 
 @SuppressWarnings("UnstableApiUsage")
 public interface CodeBlockInternal<B, M> extends CodeBlock<B, M>
@@ -25,9 +26,9 @@ public interface CodeBlockInternal<B, M> extends CodeBlock<B, M>
 
     void pushStack(int count);
 
-    void compile(MethodVisitor mv, boolean needsResult);
+    void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult);
 
-    boolean compile(MethodVisitor mv, @Nullable Label jumpEnd);
+    boolean compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, @Nullable Label jumpEnd);
 
     void pushStack(TypeToken<?> returnType);
 

@@ -5,6 +5,8 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
+import java.util.function.ToIntFunction;
+
 public class LocalStore extends InstructionSource
 {
     private final MethodImplementation<?> mi;
@@ -24,7 +26,7 @@ public class LocalStore extends InstructionSource
     }
 
     @Override
-    public boolean compile(MethodVisitor mv, Label jumpEnd, boolean needsResult)
+    public boolean compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, Label jumpEnd, boolean needsResult)
     {
         mv.visitLabel(mi.makeLabel());
 

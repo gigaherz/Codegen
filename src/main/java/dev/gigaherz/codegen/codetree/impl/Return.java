@@ -6,6 +6,8 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
+import java.util.function.ToIntFunction;
+
 @SuppressWarnings("UnstableApiUsage")
 public class Return extends InstructionSource
 {
@@ -19,7 +21,7 @@ public class Return extends InstructionSource
     }
 
     @Override
-    public boolean compile(MethodVisitor mv, Label jumpEnd, boolean needsResult)
+    public boolean compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, Label jumpEnd, boolean needsResult)
     {
         mv.visitLabel(cb.owner().makeLabel());
         compileReturn(returnType, mv);

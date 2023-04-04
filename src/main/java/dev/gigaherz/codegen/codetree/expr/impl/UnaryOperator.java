@@ -6,6 +6,8 @@ import dev.gigaherz.codegen.codetree.expr.ValueExpression;
 import dev.gigaherz.codegen.type.TypeProxy;
 import org.objectweb.asm.MethodVisitor;
 
+import java.util.function.ToIntFunction;
+
 @SuppressWarnings("UnstableApiUsage")
 public class UnaryOperator<R, B> extends ValueExpressionImpl<R, B>
 {
@@ -32,10 +34,10 @@ public class UnaryOperator<R, B> extends ValueExpressionImpl<R, B>
     }
 
     @Override
-    public void compile(MethodVisitor mv, boolean needsResult)
+    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult)
     {
         cb.beforeExpressionCompile();
-        value.compile(mv, needsResult);
+        value.compile(defineConstant, mv, needsResult);
         if (needsResult)
         {
             mv.visitInsn(opcode);

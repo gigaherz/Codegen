@@ -7,18 +7,19 @@ import dev.gigaherz.codegen.api.VarToken;
 import dev.gigaherz.codegen.api.codetree.info.FieldInfo;
 import dev.gigaherz.codegen.api.codetree.info.MethodInfo;
 import dev.gigaherz.codegen.api.codetree.info.ParamInfo;
-import dev.gigaherz.codegen.codetree.LocalVariableDef;
 import dev.gigaherz.codegen.codetree.MethodLookup;
 import dev.gigaherz.codegen.codetree.expr.*;
 import dev.gigaherz.codegen.codetree.impl.*;
 import dev.gigaherz.codegen.type.TypeProxy;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("UnstableApiUsage")
@@ -50,26 +51,26 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
         return (TypeToken) returnType;
     }
 
-    public boolean compile(MethodVisitor mv, @Nullable Label jumpEnd)
+    public boolean compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, @Nullable Label jumpEnd)
     {
         int last = instructions.size() - 1;
         for (int i = 0; i <= last; i++)
         {
             InstructionSource insn = instructions.get(i);
-            if (insn.compile(mv, i == last ? jumpEnd : null, false))
+            if (insn.compile(defineConstant, mv, i == last ? jumpEnd : null, false))
                 return false;
         }
         return true;
     }
 
-    public void compile(MethodVisitor mv, boolean needsResult)
+    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult)
     {
         var jumpEnd = new Label();
         int last = instructions.size() - 1;
         for (int i = 0; i <= last; i++)
         {
             InstructionSource insn = instructions.get(i);
-            if (insn.compile(mv, i == last ? jumpEnd : null, needsResult))
+            if (insn.compile(defineConstant, mv, i == last ? jumpEnd : null, needsResult))
                 break;
         }
         mv.visitLabel(jumpEnd);
@@ -221,15 +222,21 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
     }
 
     @Override
-    public CodeBlock<B, M> assign(LRef<?> target, ValueExpression<?, B> value)
+    public <T, S> ValueExpression<T, B> set(LRef<T> target, ValueExpression<S, B> value)
     {
-        value = owner.applyAutomaticCasting(target.targetType(), value);
-        if (target.targetType().isSupertypeOf(value.effectiveType()))
+        var value1 = owner.applyAutomaticCasting(target.targetType(), value);
+        if (target.targetType().isSupertypeOf(value1.effectiveType()))
         {
-            instructions.add(new Assignment(owner, new AssignExpression<>(this, target, value)));
-            return this;
+            return new AssignExpression<>(this, target, value1);
         }
         throw new IllegalStateException("Cannot assign field of type " + target.targetType() + " from expression of type " + value.effectiveType());
+    }
+
+    @Override
+    public CodeBlock<B, M> run(ValueExpression<?, B> value)
+    {
+        instructions.add(new Do(owner, value));
+        return this;
     }
 
     @Override
@@ -371,6 +378,15 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
     public <R> ValueExpression<R, B> staticCall(TypeToken<?> classToken, String methodName, List<ValueExpression<?, B>> values)
     {
         throw new IllegalStateException("Not implemented");
+    }
+
+    @Override
+    public final <R, T> ValueExpression<R, B> thisCall(String methodName, List<ValueExpression<?, B>> values)
+    {
+        var ml = new MethodLookup<>(owner().methodInfo().owner(), methodName);
+        for (var expr : values)
+        {ml = ml.withParam(expr.effectiveType());}
+        return methodCall(thisVar(), ml.result(), values);
     }
 
     @Override
@@ -565,6 +581,140 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
 
         return new ConditionalExpression<>(this, condition, new CodeBlockExpression<>(this, tb), new CodeBlockExpression<>(this, fb));
     }
+
+    public ValueExpression<?, B> add(ValueExpression<?, B> a, ValueExpression<?, B> b)
+    {
+        return binaryArithmeticOperator(a, b, Opcodes.IADD, Opcodes.LADD, Opcodes.FADD, Opcodes.DADD, "+");
+    }
+    public ValueExpression<?, B> sub(ValueExpression<?, B> a, ValueExpression<?, B> b)
+    {
+        return binaryArithmeticOperator(a, b, Opcodes.ISUB, Opcodes.LSUB, Opcodes.FSUB, Opcodes.DSUB, "-");
+    }
+    public ValueExpression<?, B> mul(ValueExpression<?, B> a, ValueExpression<?, B> b)
+    {
+        return binaryArithmeticOperator(a, b, Opcodes.IMUL, Opcodes.LMUL, Opcodes.FMUL, Opcodes.DMUL, "*");
+    }
+    public ValueExpression<?, B> div(ValueExpression<?, B> a, ValueExpression<?, B> b)
+    {
+        return binaryArithmeticOperator(a, b, Opcodes.IDIV, Opcodes.LDIV, Opcodes.FDIV, Opcodes.DDIV, "/");
+    }
+    public ValueExpression<?, B> mod(ValueExpression<?, B> a, ValueExpression<?, B> b)
+    {
+        return binaryArithmeticOperator(a, b, Opcodes.IREM, Opcodes.LREM, Opcodes.FREM, Opcodes.DREM, "%");
+    }
+    public ValueExpression<?, B> bitAnd(ValueExpression<?, B> a, ValueExpression<?, B> b)
+    {
+        return binaryBitwiseOperator(a, b, Opcodes.IAND, Opcodes.LAND, "&");
+    }
+    public ValueExpression<?, B> bitOr(ValueExpression<?, B> a, ValueExpression<?, B> b)
+    {
+        return binaryBitwiseOperator(a, b, Opcodes.IOR, Opcodes.LOR, "|");
+    }
+    public ValueExpression<?, B> bitXor(ValueExpression<?, B> a, ValueExpression<?, B> b)
+    {
+        return binaryBitwiseOperator(a, b, Opcodes.IXOR, Opcodes.LXOR, "^");
+    }
+    public ValueExpression<?, B> shiftLeft(ValueExpression<?, B> a, ValueExpression<?, B> b)
+    {
+        return shiftOperator(a, b, Opcodes.ISHL, Opcodes.LSHL, "<<");
+    }
+    public ValueExpression<?, B> shiftRight(ValueExpression<?, B> a, ValueExpression<?, B> b)
+    {
+        return shiftOperator(a, b, Opcodes.ISHR, Opcodes.LSHR, "&");
+    }
+    public ValueExpression<?, B> shiftRightUnsigned(ValueExpression<?, B> a, ValueExpression<?, B> b)
+    {
+        return shiftOperator(a, b, Opcodes.IUSHR, Opcodes.LUSHR, "&");
+    }
+    public ValueExpression<?, B> index(ValueExpression<?, B> array, ValueExpression<?, B> index)
+    {
+        throw new IllegalStateException("TODO -- NOT IMPLEMENTED!");
+    }
+    public ValueExpression<?, B> neg(ValueExpression<?, B> a)
+    {
+        return unaryArithmeticOperator(a, Opcodes.INEG, Opcodes.LNEG, Opcodes.FNEG, Opcodes.DNEG, "&");
+    }
+    /** @noinspection unchecked, rawtypes */
+    public ValueExpression<?, B> bitNot(ValueExpression<?, B> a)
+    {
+        if (a.effectiveType().getRawType() == int.class)
+            return new BinaryOperator(this, Opcodes.IXOR, a, literal(-1), a.effectiveType());
+        if (a.effectiveType().getRawType() == long.class)
+            return new BinaryOperator(this, Opcodes.LXOR, a, literal(-1L), a.effectiveType());
+
+        throw new IllegalStateException("Cannot apply '~' operator to value of type " + a.effectiveType());
+    }
+
+    /** @noinspection unchecked, rawtypes */
+    private ValueExpression<?, B> binaryArithmeticOperator(ValueExpression<?, B> a, ValueExpression<?, B> b, int intOp, int longOp, int floatOp, int doubleOp, String opname)
+    {
+        TypeToken<?> resultType = owner.computeArithmeticResultType(a.effectiveType(), b.effectiveType());
+        if (resultType == null)
+            throw new IllegalStateException("Cannot find result type for an arithmetic operation between " + a.effectiveType() + " and " + b.effectiveType());
+        var a1 = owner.applyAutomaticCasting(resultType, a);
+        var b1 = owner.applyAutomaticCasting(resultType, b);
+        if (resultType.getRawType() == int.class)
+            return new BinaryOperator(this, intOp, a1, b1, resultType);
+        if (resultType.getRawType() == long.class)
+            return new BinaryOperator(this, longOp, a1, b1, resultType);
+        if (resultType.getRawType() == float.class)
+            return new BinaryOperator(this, floatOp, a1, b1, resultType);
+        if (resultType.getRawType() == double.class)
+            return new BinaryOperator(this, doubleOp, a1, b1, resultType);
+
+        throw new IllegalStateException("Cannot apply '"+opname+"' operator between values of types " + a.effectiveType() + " and " + b.effectiveType());
+    }
+
+    /** @noinspection unchecked, rawtypes */
+    private ValueExpression<?, B> binaryBitwiseOperator(ValueExpression<?, B> a, ValueExpression<?, B> b, int intOp, int longOp, String opname)
+    {
+        TypeToken<?> resultType = owner.computeArithmeticResultType(a.effectiveType(), b.effectiveType());
+        if (resultType == null)
+            throw new IllegalStateException("Cannot find result type for an arithmetic operation between " + a.effectiveType() + " and " + b.effectiveType());
+        var a1 = owner.applyAutomaticCasting(resultType, a);
+        var b1 = owner.applyAutomaticCasting(resultType, b);
+        if (resultType.getRawType() == int.class)
+            return new BinaryOperator(this, intOp, a1, b1, resultType);
+        if (resultType.getRawType() == long.class)
+            return new BinaryOperator(this, longOp, a1, b1, resultType);
+
+        throw new IllegalStateException("Cannot apply '"+opname+"' operator between values of types " + a.effectiveType() + " and " + b.effectiveType());
+    }
+
+    /** @noinspection unchecked, rawtypes */
+    private ValueExpression<?, B> shiftOperator(ValueExpression<?, B> a, ValueExpression<?, B> b, int intOp, int longOp, String opname)
+    {
+        if (a.effectiveType().getRawType() == int.class)
+            return new BinaryOperator(this, intOp, a, b, a.effectiveType());
+        if (a.effectiveType().getRawType() == long.class)
+            return new BinaryOperator(this, longOp, a, b, a.effectiveType());
+
+        throw new IllegalStateException("Cannot apply '"+opname+"' operator between values of types " + a.effectiveType() + " and " + b.effectiveType());
+    }
+
+    /** @noinspection SameParameterValue */
+    private ValueExpression<?, B> unaryArithmeticOperator(ValueExpression<?, B> a, int intOp, int longOp, int floatOp, int doubleOp, String opname)
+    {
+        if (a.effectiveType().getRawType() == int.class)
+            return new UnaryOperator<>(this, intOp, a);
+        if (a.effectiveType().getRawType() == long.class)
+            return new UnaryOperator<>(this, longOp, a);
+        if (a.effectiveType().getRawType() == float.class)
+            return new UnaryOperator<>(this, floatOp, a);
+        if (a.effectiveType().getRawType() == double.class)
+            return new UnaryOperator<>(this, doubleOp, a);
+
+        throw new IllegalStateException("Cannot apply '"+opname+"' operator to value of type " + a.effectiveType());
+    }
+
+    public BooleanExpression<B> literal(boolean val) { return new Literal.Bool<>(this, val); }
+    public ValueExpression<Byte, B> literal(byte val) { return new Literal.Number<>(this, val, TypeToken.of(byte.class)); }
+    public ValueExpression<Short, B> literal(short val) { return new Literal.Number<>(this, val, TypeToken.of(short.class)); }
+    public ValueExpression<Integer, B> literal(int val) { return new Literal.Number<>(this, val, TypeToken.of(int.class)); }
+    public ValueExpression<Long, B> literal(long val) { return new Literal.Number<>(this, val, TypeToken.of(long.class)); }
+    public ValueExpression<Float, B> literal(float val) { return new Literal.Number<>(this, val, TypeToken.of(float.class)); }
+    public ValueExpression<Double, B> literal(double val) { return new Literal.Number<>(this, val, TypeToken.of(double.class)); }
+    public ValueExpression<String, B> literal(String val) { return new Literal.String<>(this, val); }
 
     public <X> CodeBlockInternal<X, M> childBlock()
     {

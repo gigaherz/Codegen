@@ -9,6 +9,8 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
+import java.util.function.ToIntFunction;
+
 @SuppressWarnings("UnstableApiUsage")
 public class ConditionalExpression<T, B> extends ValueExpressionImpl<T, B>
 {
@@ -31,19 +33,19 @@ public class ConditionalExpression<T, B> extends ValueExpressionImpl<T, B>
     }
 
     @Override
-    public void compile(MethodVisitor mv, boolean needsResult)
+    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult)
     {
         cb.beforeExpressionCompile();
 
         var jumpEnd = new Label();
         var jumpFalse = new Label();
 
-        condition.compile(mv, null, jumpFalse);
-        trueBranch.compile(mv, !MethodImplementation.isVoid(trueBranch.effectiveType()));
+        condition.compile(defineConstant, mv, null, jumpFalse);
+        trueBranch.compile(defineConstant, mv, !MethodImplementation.isVoid(trueBranch.effectiveType()));
         mv.visitJumpInsn(Opcodes.GOTO, jumpEnd);
         cb.popStack();
         mv.visitLabel(jumpFalse);
-        falseBranch.compile(mv, !MethodImplementation.isVoid(falseBranch.effectiveType()));
+        falseBranch.compile(defineConstant, mv, !MethodImplementation.isVoid(falseBranch.effectiveType()));
         mv.visitLabel(jumpEnd);
 
         cb.afterExpressionCompile(needsResult);

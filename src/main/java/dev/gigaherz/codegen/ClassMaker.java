@@ -614,7 +614,7 @@ public class ClassMaker
                         {
                             insns.remove(0);
 
-                            sc.compile(mv, endLabel, false);
+                            sc.compile(cw::newConst, mv, endLabel, false);
                         }
                         else
                         {
@@ -642,13 +642,13 @@ public class ClassMaker
 
                             var val = fi.init.apply(cb);
 
-                            val.compile(mv, true);
+                            val.compile(cw::newConst, mv, true);
 
                             mv.visitFieldInsn(Opcodes.PUTFIELD, this.owner().thisType().getInternalName(), fname, TypeProxy.getTypeDescriptor(fi.fieldType));
                         }
                     }
 
-                    codeBlock.compile(mv, endLabel);
+                    codeBlock.compile(cw::newConst, mv, endLabel);
                     mv.visitLabel(endLabel);
 
                     // locals
@@ -837,7 +837,7 @@ public class ClassMaker
 
                     mv.visitCode();
 
-                    codeBlock.compile(mv, endLabel);
+                    codeBlock.compile(cw::newConst, mv, endLabel);
                     mv.visitLabel(endLabel);
 
                     // locals

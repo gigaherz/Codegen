@@ -9,6 +9,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 import javax.annotation.Nullable;
+import java.util.function.ToIntFunction;
 
 public class LogicExpression<B> extends BooleanExpressionImpl<B>
 {
@@ -25,7 +26,7 @@ public class LogicExpression<B> extends BooleanExpressionImpl<B>
     }
 
     @Override
-    public void compile(MethodVisitor mv, boolean needsResult)
+    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult)
     {
         cb.beforeExpressionCompile();
         if (needsResult)
@@ -33,7 +34,7 @@ public class LogicExpression<B> extends BooleanExpressionImpl<B>
             var jumpFalse = new Label();
             var jumpEnd = new Label();
 
-            compile(mv, null, jumpFalse);
+            compile(defineConstant, mv, null, jumpFalse);
 
             mv.visitInsn(Opcodes.ICONST_1);
             mv.visitJumpInsn(Opcodes.GOTO, jumpEnd);
@@ -46,7 +47,7 @@ public class LogicExpression<B> extends BooleanExpressionImpl<B>
     }
 
     @Override
-    public void compile(MethodVisitor mv, @Nullable Label jumpTrue, @Nullable Label jumpFalse)
+    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, @Nullable Label jumpTrue, @Nullable Label jumpFalse)
     {
         if (jumpFalse == null && jumpTrue == null)
             throw new IllegalStateException("Comparison compile called with both labels null");
@@ -59,15 +60,15 @@ public class LogicExpression<B> extends BooleanExpressionImpl<B>
                 case AND -> {
                     boolean b = jumpFalse == null;
                     if (b) jumpFalse = new Label();
-                    b1.compile(mv, null, jumpFalse);
-                    b2.compile(mv, jumpTrue, jumpFalse);
+                    b1.compile(defineConstant, mv, null, jumpFalse);
+                    b2.compile(defineConstant, mv, jumpTrue, jumpFalse);
                     if (b) mv.visitLabel(jumpFalse);
                 }
                 case OR -> {
                     boolean b = jumpTrue == null;
                     if (b) jumpTrue = new Label();
-                    b1.compile(mv, jumpTrue, null);
-                    b2.compile(mv, jumpTrue, jumpFalse);
+                    b1.compile(defineConstant, mv, jumpTrue, null);
+                    b2.compile(defineConstant, mv, jumpTrue, jumpFalse);
                     if (b) mv.visitLabel(jumpTrue);
                 }
                 default -> throw new IllegalStateException("Cannot use GT/LT/GE/LE with non-numeric data types.");
@@ -81,10 +82,10 @@ public class LogicExpression<B> extends BooleanExpressionImpl<B>
                     boolean b = jumpFalse == null;
                     if (b) jumpFalse = new Label();
 
-                    first.compile(mv, true);
+                    first.compile(defineConstant, mv, true);
                     mv.visitJumpInsn(Opcodes.IFEQ, jumpFalse);
 
-                    second.compile(mv, true);
+                    second.compile(defineConstant, mv, true);
                     mv.visitJumpInsn(Opcodes.IFEQ, jumpFalse);
 
                     if (jumpTrue != null) mv.visitJumpInsn(Opcodes.GOTO, jumpTrue);
@@ -95,10 +96,10 @@ public class LogicExpression<B> extends BooleanExpressionImpl<B>
                     boolean b = jumpTrue == null;
                     if (b) jumpTrue = new Label();
 
-                    first.compile(mv, true);
+                    first.compile(defineConstant, mv, true);
                     mv.visitJumpInsn(Opcodes.IFNE, jumpTrue);
 
-                    second.compile(mv, true);
+                    second.compile(defineConstant, mv, true);
                     mv.visitJumpInsn(Opcodes.IFNE, jumpTrue);
 
                     if (jumpFalse != null) mv.visitJumpInsn(Opcodes.GOTO, jumpFalse);
@@ -111,8 +112,8 @@ public class LogicExpression<B> extends BooleanExpressionImpl<B>
         }
         else
         {
-            first.compile(mv, true);
-            second.compile(mv, true);
+            first.compile(defineConstant, mv, true);
+            second.compile(defineConstant, mv, true);
 
             if (MethodImplementation.isInteger(first.effectiveType()))
             {

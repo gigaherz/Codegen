@@ -7,6 +7,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 import javax.annotation.Nullable;
+import java.util.function.ToIntFunction;
 
 public class NotExpression<B> extends BooleanExpressionImpl<B>
 {
@@ -19,10 +20,10 @@ public class NotExpression<B> extends BooleanExpressionImpl<B>
     }
 
     @Override
-    public void compile(MethodVisitor mv, boolean needsResult)
+    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult)
     {
         cb.beforeExpressionCompile();
-        first.compile(mv, needsResult);
+        first.compile(defineConstant, mv, needsResult);
         if (needsResult)
         {
             var jumpFalse = new Label();
@@ -38,18 +39,18 @@ public class NotExpression<B> extends BooleanExpressionImpl<B>
     }
 
     @Override
-    public void compile(MethodVisitor mv, @Nullable Label jumpTrue, @Nullable Label jumpFalse)
+    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, @Nullable Label jumpTrue, @Nullable Label jumpFalse)
     {
         if (jumpFalse == null && jumpTrue == null)
             throw new IllegalStateException("Comparison compile called with both labels null");
 
         if (first instanceof BooleanExpressionImpl x)
         {
-            x.compile(mv, jumpFalse, jumpTrue);
+            x.compile(defineConstant, mv, jumpFalse, jumpTrue);
         }
         else
         {
-            first.compile(mv, true);
+            first.compile(defineConstant, mv, true);
             mv.visitJumpInsn(Opcodes.IFEQ, jumpTrue);
             cb.popStack();
             mv.visitJumpInsn(Opcodes.GOTO, jumpFalse);

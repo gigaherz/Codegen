@@ -7,6 +7,8 @@ import dev.gigaherz.codegen.codetree.impl.LocalVariable;
 import dev.gigaherz.codegen.type.TypeProxy;
 import org.objectweb.asm.MethodVisitor;
 
+import java.util.function.ToIntFunction;
+
 @SuppressWarnings("UnstableApiUsage")
 public class VarExpression<T, B> extends ValueExpressionImpl<T, B>
 {
@@ -31,7 +33,7 @@ public class VarExpression<T, B> extends ValueExpressionImpl<T, B>
     }
 
     @Override
-    public void compile(MethodVisitor mv, boolean needsResult)
+    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult)
     {
         cb.beforeExpressionCompile();
         if (needsResult)

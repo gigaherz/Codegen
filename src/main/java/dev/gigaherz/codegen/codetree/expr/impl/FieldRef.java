@@ -7,6 +7,8 @@ import dev.gigaherz.codegen.codetree.expr.ValueExpression;
 import dev.gigaherz.codegen.codetree.impl.FieldStore;
 import org.objectweb.asm.MethodVisitor;
 
+import java.util.function.ToIntFunction;
+
 @SuppressWarnings("UnstableApiUsage")
 public class FieldRef<T, B> extends LRefImpl<T, B>
 {
@@ -32,13 +34,13 @@ public class FieldRef<T, B> extends LRefImpl<T, B>
     }
 
     @Override
-    public void compileBefore(MethodVisitor mv)
+    public void compileBefore(ToIntFunction<Object> defineConstant, MethodVisitor mv)
     {
-        objRef.compile(mv, true);
+        objRef.compile(defineConstant, mv, true);
     }
 
     @Override
-    public void compileAfter(MethodVisitor mv)
+    public void compileAfter(ToIntFunction<Object> defineConstant, MethodVisitor mv)
     {
         FieldStore.compile(field, mv);
         cb.popStack();

@@ -39,7 +39,15 @@ public interface CodeBlock<B, M> extends ExpressionBuilder<B, M>
 
     <T> void breakVal(ValueExpression<?, M> value);
 
-    CodeBlock<B, M> assign(LRef<?> target, ValueExpression<?, B> value);
+    <T, S> ValueExpression<T, B> set(LRef<T> target, ValueExpression<S, B> value);
+
+    CodeBlock<B, M> run(ValueExpression<?, B> value);
+
+    default CodeBlock<B, M> assign(LRef<?> target, ValueExpression<?, B> value)
+    {
+        return run(set(target, value));
+    }
+
 
     LRef<?> fieldRef(String fieldName);
 

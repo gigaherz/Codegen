@@ -37,9 +37,7 @@ public class ClassGenDemo
 
         public int maxCoord()
         {
-            boolean temp = x > y && x > z;
-            temp = temp;
-            if (temp)
+            if (x > y && x > z)
             {
                 return x;
             }
@@ -51,6 +49,18 @@ public class ClassGenDemo
             {
                 return z;
             }
+        }
+
+        public int f(int a, int b)
+        {
+            return a+b;
+        }
+
+        public boolean test()
+        {
+            int a = x;
+            int b = f(a,a=y);
+            return (a=z) > b;
         }
     }
 
@@ -80,6 +90,7 @@ public class ClassGenDemo
         int getX();
         int getY();
         int getZ();
+        boolean test();
     }
 
     public static void main(String[] args)
@@ -108,14 +119,26 @@ public class ClassGenDemo
                 .setPublic().setInstance().implementation(cb -> cb.returnVal(cb.thisVar().field("z")))
                 .method("maxCoord", int.class)
                 .setPublic().setInstance().implementation(cb -> cb
-                        .local("test", boolean.class)
-                        .assign(cb.localRef("test"), cb.and(cb.gt(cb.field("x"), cb.field("y")), cb.gt(cb.field("x"), cb.field("z"))))
-                        .assign(cb.localRef("test"), cb.localVar("test"))
                         .ifElse(
-                                cb.localVar("test").castToBool(),
+                                cb.and(cb.gt(cb.field("x"), cb.field("y")), cb.gt(cb.field("x"), cb.field("z"))),
                                 ct -> ct.returnVal(ct.field("x")),
                                 cf -> cf.returnVal(cf.iif(cf.gt(cf.field("y"), cf.field("z")), cf.field("y"), cf.field("z")))
-                        ));
+                        ))
+                .method("f", int.class)
+                .setPublic().setInstance()
+                .param(int.class).withName("a").param(int.class).withName("b")
+                .implementation(cb -> cb
+                        .returnVal(cb.add(cb.localVar("a"), cb.localVar("b")))
+                )
+                .method("test", boolean.class)
+                .setPublic().setInstance().implementation(cb -> cb
+                        .local("a", int.class)
+                        .local("b", int.class)
+                        .assign(cb.localRef("a"), cb.field("x"))
+                        .assign(cb.localRef("b"), cb.thisCall("f", cb.localVar("a"), cb.set(cb.localRef("a"), cb.field("y"))))
+                        .returnVal(cb.gt(cb.set(cb.localRef("a"), cb.field("x")), cb.localVar("b")))
+                );
+
 
         try
         {
@@ -135,8 +158,9 @@ public class ClassGenDemo
             var cn = ci.thisType().getConstructor(int.class, int.class, int.class);
             cn.setAccessible(true);
             var instance = cn.newInstance(1, 2, 3);
-            var x = instance.getX();
-            System.out.println("getX() returned " + x);
+            var x = instance.test();
+            System.out.println("test() returned " + x);
+            System.out.println("test() returned " + (new Test(1,2,3)).test());
         }
         catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e)
         {

@@ -35,7 +35,7 @@ public abstract class ValueExpressionImpl<T, B> extends ExprBase<B> implements V
     @Override
     public BooleanExpression<B> castToBool()
     {
-        return new CastExpression.Bool(cb, this);
+        return new CastExpression.Bool<>(cb, this);
     }
 
     @Override
@@ -45,7 +45,7 @@ public abstract class ValueExpressionImpl<T, B> extends ExprBase<B> implements V
     }
 
     @Override
-    public ValueExpression<?, B> field(String fieldName)
+    public <F> ValueExpression<F, B> field(String fieldName)
     {
         return cb.field(this, proxyType().classInfo().getField(fieldName));
     }

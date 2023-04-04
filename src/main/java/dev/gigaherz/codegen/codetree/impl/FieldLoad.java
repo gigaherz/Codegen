@@ -9,6 +9,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 import javax.annotation.Nullable;
+import java.util.function.ToIntFunction;
 
 public class FieldLoad extends InstructionSource
 {
@@ -25,7 +26,7 @@ public class FieldLoad extends InstructionSource
     }
 
     @Override
-    public boolean compile(MethodVisitor mv, Label jumpEnd, boolean needsResult)
+    public boolean compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, Label jumpEnd, boolean needsResult)
     {
         mv.visitLabel(mi.makeLabel());
 

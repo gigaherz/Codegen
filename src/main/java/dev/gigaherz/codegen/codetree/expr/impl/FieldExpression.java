@@ -7,6 +7,8 @@ import dev.gigaherz.codegen.codetree.expr.ValueExpression;
 import dev.gigaherz.codegen.codetree.impl.FieldLoad;
 import org.objectweb.asm.MethodVisitor;
 
+import java.util.function.ToIntFunction;
+
 @SuppressWarnings("UnstableApiUsage")
 public class FieldExpression<T, B> extends ValueExpressionImpl<T, B>
 {
@@ -27,13 +29,13 @@ public class FieldExpression<T, B> extends ValueExpressionImpl<T, B>
     }
 
     @Override
-    public void compile(MethodVisitor mv, boolean needsResult)
+    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult)
     {
         cb.beforeExpressionCompile();
 
         if (needsResult)
         {
-            objRef.compile(mv, true);
+            objRef.compile(defineConstant, mv, true);
             FieldLoad.compile(field, mv);
             cb.popStack();
             cb.pushStack(field.type());

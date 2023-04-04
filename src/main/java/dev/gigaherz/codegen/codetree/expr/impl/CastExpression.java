@@ -9,6 +9,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 import javax.annotation.Nullable;
+import java.util.function.ToIntFunction;
 
 /** @noinspection UnstableApiUsage*/
 public class CastExpression<T, B> extends ValueExpressionImpl<T, B>
@@ -30,12 +31,12 @@ public class CastExpression<T, B> extends ValueExpressionImpl<T, B>
     }
 
     @Override
-    public void compile(MethodVisitor mv, boolean needsResult)
+    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult)
     {
         cb.beforeExpressionCompile();
         if (expression.effectiveType().equals(targetClass))
         {
-            expression.compile(mv,needsResult);
+            expression.compile(defineConstant, mv, needsResult);
         }
         else if (targetClass.getRawType().isAssignableFrom(expression.effectiveType().getRawType()))
         {
@@ -56,7 +57,7 @@ public class CastExpression<T, B> extends ValueExpressionImpl<T, B>
         }
 
         @Override
-        public void compile(MethodVisitor mv, @Nullable Label jumpTrue, @Nullable Label jumpFalse)
+        public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, @Nullable Label jumpTrue, @Nullable Label jumpFalse)
         {
             if (jumpFalse == null && jumpTrue == null)
                 throw new IllegalStateException("Comparison compile called with both labels null");
@@ -64,13 +65,14 @@ public class CastExpression<T, B> extends ValueExpressionImpl<T, B>
             cb.beforeExpressionCompile();
             if (expression instanceof BooleanExpression bexp)
             {
-                bexp.compile(mv, jumpTrue, jumpFalse);
+                //noinspection unchecked
+                bexp.compile(defineConstant, mv, jumpTrue, jumpFalse);
             }
             else if (expression.effectiveType().getRawType().equals(boolean.class))
             {
                 //throw new IllegalStateException("Not implemented");
 
-                expression.compile(mv, true);
+                expression.compile(defineConstant, mv, true);
 
                 cb.popStack();
 

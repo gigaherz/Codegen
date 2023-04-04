@@ -11,6 +11,7 @@ import org.objectweb.asm.Opcodes;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.ToIntFunction;
 
 @SuppressWarnings("UnstableApiUsage")
 public class MethodCallExpression<R, B> extends ValueExpressionImpl<R, B>
@@ -35,26 +36,26 @@ public class MethodCallExpression<R, B> extends ValueExpressionImpl<R, B>
     }
 
     @Override
-    public void compile(MethodVisitor mv, boolean needsResult)
+    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult)
     {
         cb.beforeExpressionCompile();
         if (method.isStatic())
         {
-            lValues.forEach(val -> val.compile(mv, true));
+            lValues.forEach(val -> val.compile(defineConstant, mv, true));
             for (int i = 0; i < lValues.size(); i++) cb.popStack();
             mv.visitMethodInsn(Opcodes.INVOKESTATIC, method.owner().thisType().getInternalName(), method.name(), method.getDescriptor(), method.owner().thisType().isInterface());
         }
         else if (method.name().equals("<init>"))
         {
-            Objects.requireNonNull(objRef).compile(mv, true);
-            lValues.forEach(val -> val.compile(mv, true));
+            Objects.requireNonNull(objRef).compile(defineConstant, mv, true);
+            lValues.forEach(val -> val.compile(defineConstant, mv, true));
             for (int i = 0; i <= lValues.size(); i++) cb.popStack();
             mv.visitMethodInsn(Opcodes.INVOKESPECIAL, method.owner().thisType().getInternalName(), method.name(), method.getDescriptor(), method.owner().thisType().isInterface());
         }
         else
         {
-            Objects.requireNonNull(objRef).compile(mv, true);
-            lValues.forEach(val -> val.compile(mv, true));
+            Objects.requireNonNull(objRef).compile(defineConstant, mv, true);
+            lValues.forEach(val -> val.compile(defineConstant, mv, true));
             for (int i = 0; i <= lValues.size(); i++) cb.popStack();
             mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, method.owner().thisType().getInternalName(), method.name(), method.getDescriptor(), method.owner().thisType().isInterface());
         }

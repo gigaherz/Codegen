@@ -8,6 +8,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 import java.util.function.Consumer;
+import java.util.function.ToIntFunction;
 
 public class IfBlock<T, P, R> extends InstructionSource
 {
@@ -25,7 +26,7 @@ public class IfBlock<T, P, R> extends InstructionSource
     }
 
     @Override
-    public boolean compile(MethodVisitor mv, Label jumpEnd, boolean needsResult)
+    public boolean compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, Label jumpEnd, boolean needsResult)
     {
         mv.visitLabel(cb.owner().makeLabel());
 
@@ -40,11 +41,11 @@ public class IfBlock<T, P, R> extends InstructionSource
         var b = (jumpEnd == null);
         if (b) jumpEnd = cb.owner().makeLabel();
 
-        condition.compile(mv, null, jumpFalse);
-        boolean tr = tb.compile(mv, null);
+        condition.compile(defineConstant, mv, null, jumpFalse);
+        boolean tr = tb.compile(defineConstant, mv, null);
         if (tr) mv.visitJumpInsn(Opcodes.GOTO, jumpEnd);
         mv.visitLabel(jumpFalse);
-        boolean fr = fb.compile(mv, jumpEnd);
+        boolean fr = fb.compile(defineConstant, mv, jumpEnd);
         if (b) mv.visitLabel(jumpEnd);
 
         return (!tr && !fr) || (tb.isEmpty() && !fr) || (fb.isEmpty() && !tr);

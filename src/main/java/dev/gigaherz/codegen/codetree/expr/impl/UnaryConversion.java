@@ -5,6 +5,8 @@ import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
 import dev.gigaherz.codegen.codetree.expr.ValueExpression;
 import org.objectweb.asm.MethodVisitor;
 
+import java.util.function.ToIntFunction;
+
 @SuppressWarnings("UnstableApiUsage")
 public class UnaryConversion<R, T, B> extends ValueExpressionImpl<R, B>
 {
@@ -27,12 +29,12 @@ public class UnaryConversion<R, T, B> extends ValueExpressionImpl<R, B>
     }
 
     @Override
-    public void compile(MethodVisitor mv, boolean needsResult)
+    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult)
     {
         cb.beforeExpressionCompile();
         if (needsResult)
         {
-            value.compile(mv, true);
+            value.compile(defineConstant, mv, true);
             mv.visitInsn(opcode);
         }
         cb.afterExpressionCompile(needsResult);
