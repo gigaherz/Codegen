@@ -95,12 +95,12 @@ public class MethodImplementation<R>
 
         if (!methodInfo.isStatic())
         {
-            localsSize += makeLocal(0, methodInfo.owner().thisType(), TypeProxy.of(methodInfo.owner().superClass()), "this");
+            localsSize += makeLocal(0, methodInfo.owner().thisType(), TypeProxy.of(methodInfo.owner().superClass()), "this").slotCount;
         }
 
         for (ParamInfo<?> f : methodInfo.params())
         {
-            localsSize += makeLocal(localsSize, f.paramType(), f.name());
+            localsSize += makeLocal(localsSize, f.paramType(), f.name()).slotCount;
         }
 
         rootBlock = new CodeBlockImpl<>(this, null, methodInfo.returnType());
@@ -111,26 +111,26 @@ public class MethodImplementation<R>
         return methodInfo;
     }
 
-    public int defineLocal(String name, TypeProxy<?> type)
+    public <T> LocalVariable<T> defineLocal(String name, TypeProxy<T> type)
     {
-        int index = localsSize;
-        localsSize += makeLocal(localsSize, type, name);
-        return index;
+        var local = makeLocal(localsSize, type, name);
+        localsSize += local.slotCount;
+        return local;
     }
 
-    private int makeLocal(int cLocal, TypeProxy<?> type, @Nullable String name)
+    private <T> LocalVariable<T> makeLocal(int cLocal, TypeProxy<T> type, @Nullable String name)
     {
         return makeLocal(cLocal, type, type, name);
     }
 
-    private int makeLocal(int cLocal, TypeProxy<?> type, TypeProxy<?> effectiveType, @Nullable String name)
+    private <T> LocalVariable<T> makeLocal(int cLocal, TypeProxy<T> type, TypeProxy<?> effectiveType, @Nullable String name)
     {
         int slotCount = slotCount(effectiveType);
-        LocalVariable<?> local = new LocalVariable<>(cLocal, type, slotCount);
+        LocalVariable<T> local = new LocalVariable<>(cLocal, type, slotCount);
         if (name != null)
             local.name = name;
         locals.add(local);
-        return slotCount;
+        return local;
     }
 
     public static int slotCount(TypeProxy<?> effectiveType)

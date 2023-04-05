@@ -1,6 +1,7 @@
 package dev.gigaherz.codegen.codetree.impl;
 
 import com.google.common.reflect.TypeToken;
+import dev.gigaherz.codegen.codetree.CompileTerminationMode;
 import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -21,11 +22,13 @@ public class Return extends InstructionSource
     }
 
     @Override
-    public boolean compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, Label jumpEnd, boolean needsResult)
+    public CompileTerminationMode compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, Label jumpEnd, boolean needsResult)
     {
         mv.visitLabel(cb.owner().makeLabel());
+
         compileReturn(returnType, mv);
-        return true;
+
+        return CompileTerminationMode.BREAK;
     }
 
     public static void compileReturn(TypeToken<?> returnType, MethodVisitor mv)

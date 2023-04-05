@@ -3,6 +3,7 @@ package dev.gigaherz.codegen.codetree.impl;
 import dev.gigaherz.codegen.api.codetree.info.ClassInfo;
 import dev.gigaherz.codegen.api.codetree.info.FieldInfo;
 import dev.gigaherz.codegen.codetree.ClassData;
+import dev.gigaherz.codegen.codetree.CompileTerminationMode;
 import dev.gigaherz.codegen.type.TypeProxy;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -26,7 +27,7 @@ public class FieldStore extends InstructionSource
     }
 
     @Override
-    public boolean compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, Label jumpEnd, boolean needsResult)
+    public CompileTerminationMode compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, Label jumpEnd, boolean needsResult)
     {
         mv.visitLabel(mi.makeLabel());
 
@@ -37,7 +38,7 @@ public class FieldStore extends InstructionSource
 
         compile(fieldInfo, mv);
 
-        return false;
+        return CompileTerminationMode.NORMAL;
     }
 
     public static void compile(FieldInfo<?> fieldInfo, MethodVisitor mv)

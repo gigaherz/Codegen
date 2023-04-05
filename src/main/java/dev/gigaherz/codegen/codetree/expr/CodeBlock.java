@@ -3,9 +3,12 @@ package dev.gigaherz.codegen.codetree.expr;
 import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.api.VarToken;
 import dev.gigaherz.codegen.codetree.MethodLookup;
+import dev.gigaherz.codegen.codetree.impl.ForBlock;
 import dev.gigaherz.codegen.codetree.impl.InstructionSource;
+import dev.gigaherz.codegen.codetree.impl.LocalVariable;
 import dev.gigaherz.codegen.codetree.impl.MethodImplementation;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -125,17 +128,8 @@ public interface CodeBlock<B, M> extends ExpressionBuilder<B, M>
     @SuppressWarnings("UnusedReturnValue")
     CodeBlock<B, M> ifElse(BooleanExpression<?> condition, Consumer<CodeBlock<B, M>> trueBranch, Consumer<CodeBlock<B, M>> falseBranch);
 
-    CodeBlock<B, M> forLoop(String localName, TypeToken<?> varType, BooleanExpression<?> condition, ValueExpression<?, B> step, Consumer<CodeBlock<B, M>> body);
-
-    default CodeBlock<B, M> forLoop(String localName, Class<?> varType, BooleanExpression<?> condition, ValueExpression<?, B> step, Consumer<CodeBlock<B, M>> body)
-    {
-        return forLoop(localName, TypeToken.of(varType), condition, step, body);
-    }
-
-    default CodeBlock<B, M> forLoop(VarToken<?> varType, BooleanExpression<?> condition, ValueExpression<?, B> step, Consumer<CodeBlock<B, M>> body)
-    {
-        return forLoop(varType.name(), varType.type(), condition, step, body);
-    }
+    /** @noinspection unchecked*/
+    <T> CodeBlock<B, M> forLoop(@Nullable Consumer<CodeBlock<T, M>> init, @Nullable BooleanExpression<?> condition, @Nullable Consumer<CodeBlock<T, M>> step, Consumer<CodeBlock<T, M>> body);
 
     <V, S extends V> CodeBlock<B, M> forEach(String localName, TypeToken<V> varType, ValueExpression<S, B> collection, Consumer<CodeBlock<B, M>> body);
 

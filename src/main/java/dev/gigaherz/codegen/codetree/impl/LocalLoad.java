@@ -1,5 +1,6 @@
 package dev.gigaherz.codegen.codetree.impl;
 
+import dev.gigaherz.codegen.codetree.CompileTerminationMode;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -25,7 +26,7 @@ public class LocalLoad extends InstructionSource
     }
 
     @Override
-    public boolean compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, Label jumpEnd, boolean needsResult)
+    public CompileTerminationMode compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, Label jumpEnd, boolean needsResult)
     {
         mv.visitLabel(mi.makeLabel());
 
@@ -44,7 +45,7 @@ public class LocalLoad extends InstructionSource
 
         compile(localVariable, mv);
 
-        return false;
+        return CompileTerminationMode.NORMAL;
     }
 
     public static void compile(LocalVariable<?> localVariable, MethodVisitor mv)

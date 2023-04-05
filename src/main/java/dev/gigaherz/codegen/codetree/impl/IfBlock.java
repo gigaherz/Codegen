@@ -1,5 +1,6 @@
 package dev.gigaherz.codegen.codetree.impl;
 
+import dev.gigaherz.codegen.codetree.CompileTerminationMode;
 import dev.gigaherz.codegen.codetree.expr.BooleanExpression;
 import dev.gigaherz.codegen.codetree.expr.CodeBlock;
 import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
@@ -26,15 +27,12 @@ public class IfBlock<T, P, R> extends InstructionSource
     }
 
     @Override
-    public boolean compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, Label jumpEnd, boolean needsResult)
+    public CompileTerminationMode compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, Label jumpEnd, boolean needsResult)
     {
         mv.visitLabel(cb.owner().makeLabel());
 
-        var tb = cb.<T>childBlock();
-        var fb = cb.<T>childBlock();
-
-        trueBranch.accept(tb);
-        falseBranch.accept(fb);
+        var cbTrue = cb.<T>childBlock();
+        var cbFalse = cb.<T>childBlock();
 
         var jumpFalse = cb.owner().makeLabel();
 
@@ -42,12 +40,19 @@ public class IfBlock<T, P, R> extends InstructionSource
         if (b) jumpEnd = cb.owner().makeLabel();
 
         condition.compile(defineConstant, mv, null, jumpFalse);
-        boolean tr = tb.compile(defineConstant, mv, null);
-        if (tr) mv.visitJumpInsn(Opcodes.GOTO, jumpEnd);
+
+        trueBranch.accept(cbTrue);
+        var retTrue = cbTrue.compile(defineConstant, mv, null);
+
+        if (!retTrue.isBreak()) mv.visitJumpInsn(Opcodes.GOTO, jumpEnd);
         mv.visitLabel(jumpFalse);
-        boolean fr = fb.compile(defineConstant, mv, jumpEnd);
+
+        falseBranch.accept(cbFalse);
+        var retFalse = cbFalse.compile(defineConstant, mv, jumpEnd);
+
         if (b) mv.visitLabel(jumpEnd);
 
-        return (!tr && !fr) || (tb.isEmpty() && !fr) || (fb.isEmpty() && !tr);
+        return ((retTrue.isBreak() && retFalse.isBreak()) || (cbTrue.isEmpty() && retFalse.isBreak()) || (cbFalse.isEmpty() && retTrue.isBreak()))
+                ? CompileTerminationMode.BREAK : CompileTerminationMode.NORMAL;
     }
 }

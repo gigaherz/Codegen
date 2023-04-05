@@ -7,6 +7,7 @@ import dev.gigaherz.codegen.api.VarToken;
 import dev.gigaherz.codegen.api.codetree.info.FieldInfo;
 import dev.gigaherz.codegen.api.codetree.info.MethodInfo;
 import dev.gigaherz.codegen.api.codetree.info.ParamInfo;
+import dev.gigaherz.codegen.codetree.CompileTerminationMode;
 import dev.gigaherz.codegen.codetree.MethodLookup;
 import dev.gigaherz.codegen.codetree.expr.*;
 import dev.gigaherz.codegen.codetree.impl.*;
@@ -27,20 +28,24 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
 {
     @Nullable
     private final CodeBlock<P, M> parentBlock;
+    private final Label breakLabel;
+    private final Label continueLabel;
     private TypeToken<?> returnType;
     private final MethodImplementation<M> owner;
     private final List<InstructionSource> instructions = Lists.newArrayList();
     private final Map<String, LocalVariable<?>> locals = new HashMap<>();
 
-    public CodeBlockImpl(MethodImplementation<M> owner, @Nullable CodeBlock<P, M> parentBlock)
+    public CodeBlockImpl(MethodImplementation<M> owner, @Nullable CodeBlock<P, M> parentBlock, Label breakLabel, Label continueLabel)
     {
         this.owner = owner;
         this.parentBlock = parentBlock;
+        this.breakLabel = breakLabel;
+        this.continueLabel = continueLabel;
     }
 
     public CodeBlockImpl(MethodImplementation<M> owner, @Nullable CodeBlock<P, M> parentBlock, TypeToken<B> returnType)
     {
-        this(owner, parentBlock);
+        this(owner, parentBlock, null, null);
         this.returnType = returnType;
     }
 
@@ -51,16 +56,16 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
         return (TypeToken) returnType;
     }
 
-    public boolean compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, @Nullable Label jumpEnd)
+    public CompileTerminationMode compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, @Nullable Label jumpEnd)
     {
         int last = instructions.size() - 1;
         for (int i = 0; i <= last; i++)
         {
             InstructionSource insn = instructions.get(i);
-            if (insn.compile(defineConstant, mv, i == last ? jumpEnd : null, false))
-                return false;
+            if (insn.compile(defineConstant, mv, i == last ? jumpEnd : null, false).isBreak())
+                return CompileTerminationMode.BREAK;
         }
-        return true;
+        return CompileTerminationMode.NORMAL;
     }
 
     public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult)
@@ -70,7 +75,7 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
         for (int i = 0; i <= last; i++)
         {
             InstructionSource insn = instructions.get(i);
-            if (insn.compile(defineConstant, mv, i == last ? jumpEnd : null, needsResult))
+            if (insn.compile(defineConstant, mv, i == last ? jumpEnd : null, needsResult).isBreak())
                 break;
         }
         mv.visitLabel(jumpEnd);
@@ -97,6 +102,20 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
             throw new IllegalStateException("Stack at the end of an expression must be "+expectedDiff+" more than it was at the start, but it was " + actualDiff);
     }
 
+    @Nullable
+    @Override
+    public Label breakLabel()
+    {
+        return breakLabel;
+    }
+
+    @Nullable
+    @Override
+    public Label continueLabel()
+    {
+        return continueLabel;
+    }
+
     @Override
     public List<InstructionSource> instructions()
     {
@@ -106,23 +125,25 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
     @Override
     public CodeBlock<B, M> local(String name, TypeToken<?> varType)
     {
-        if (locals.containsKey(name))
-            throw new IllegalStateException("A local with name '" + name + "' has already been declared.");
-        var index = owner.defineLocal(name, TypeProxy.of(varType));
-        locals.put(name, owner.getLocalVariable(index));
+        LocalVariable<?> local = defineLocal(name, varType);
+        locals.put(name, local);
         return this;
     }
 
     @Override
     public CodeBlock<B, M> local(String name, TypeToken<?> varType, ValueExpression<?, B> initializer)
     {
-        if (locals.containsKey(name))
-            throw new IllegalStateException("A local with name '" + name + "' has already been declared.");
-        var index = owner.defineLocal(name, TypeProxy.of(varType));
-        var local = owner.getLocalVariable(index);
+        LocalVariable<?> local = defineLocal(name, varType);
         locals.put(name, local);
         assign(new VarRef<>(this, local), initializer);
         return this;
+    }
+
+    private <T> LocalVariable<T> defineLocal(String name, TypeToken<T> varType)
+    {
+        if (locals.containsKey(name))
+            throw new IllegalStateException("A local with name '" + name + "' has already been declared in this scope.");
+        return owner.defineLocal(name, TypeProxy.of(varType));
     }
 
     public void pushStack(TypeToken<?> type)
@@ -197,21 +218,21 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
         ValueExpression<?, M> nValue = owner.applyAutomaticCasting(owner.methodInfo().returnType(), value);
         if (owner.methodInfo().returnType().isSupertypeOf(value.effectiveType()))
         {
-            instructions.add(new ExprReturn(this, owner.methodInfo().returnType(), nValue));
+            instructions.add(new ReturnWithValue(this, owner.methodInfo().returnType(), nValue));
         }
     }
 
     @Override
     public CodeBlock<B, M> breakLoop()
     {
-        instructions.add(new SkipLoop(true));
+        instructions.add(new Break());
         return this;
     }
 
     @Override
     public CodeBlock<B, M> continueLoop()
     {
-        instructions.add(new SkipLoop(false));
+        instructions.add(new Continue(this));
         return this;
     }
 
@@ -229,7 +250,7 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
         }
         if (returnType.isSupertypeOf(value.effectiveType()))
         {
-            instructions.add(new ExprBreak(this, nValue));
+            instructions.add(new BreakWithValue(this, nValue));
         }
     }
 
@@ -342,7 +363,7 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
     @Override
     public CodeBlock<B, M> exec(ValueExpression<?, B> value)
     {
-        instructions.add(new ExecuteExpression(owner, value));
+        instructions.add(new Compute(owner, value));
         return this;
     }
 
@@ -728,9 +749,9 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
     public ValueExpression<Double, B> literal(double val) { return new Literal.Number<>(this, val, TypeToken.of(double.class)); }
     public ValueExpression<String, B> literal(String val) { return new Literal.String<>(this, val); }
 
-    public <X> CodeBlockInternal<X, M> childBlock()
+    public <X> CodeBlockInternal<X, M> childBlock(Label breakLabel, Label continueLabel)
     {
-        return new CodeBlockImpl<>(owner, this);
+        return new CodeBlockImpl<>(owner, this, breakLabel, continueLabel);
     }
 
     @Override
@@ -740,10 +761,12 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
         return this;
     }
 
+    /** @noinspection unchecked*/
     @Override
-    public CodeBlock<B, M> forLoop(String localName, TypeToken<?> varType, BooleanExpression<?> condition, ValueExpression<?, B> step, Consumer<CodeBlock<B, M>> body)
+    public <T> CodeBlock<B, M> forLoop(@Nullable Consumer<CodeBlock<T, M>> init, @Nullable BooleanExpression<?> condition, @Nullable Consumer<CodeBlock<T, M>> step, Consumer<CodeBlock<T, M>> body)
     {
-        throw new IllegalStateException("TODO - Not implemented");
+        instructions.add(new ForBlock<T,B,M>(this, init, condition, step, body));
+        return this;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package dev.gigaherz.codegen.codetree.impl;
 
+import dev.gigaherz.codegen.codetree.CompileTerminationMode;
 import dev.gigaherz.codegen.codetree.expr.ValueExpression;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -18,11 +19,12 @@ public class Do extends InstructionSource
     }
 
     @Override
-    public boolean compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, Label jumpEnd, boolean needsResult)
+    public CompileTerminationMode compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, Label jumpEnd, boolean needsResult)
     {
         mv.visitLabel(mi.makeLabel());
+
         expression.compile(defineConstant, mv, false);
 
-        return false;
+        return CompileTerminationMode.NORMAL;
     }
 }
