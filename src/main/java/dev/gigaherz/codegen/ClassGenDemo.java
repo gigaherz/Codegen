@@ -132,10 +132,8 @@ public class ClassGenDemo
                 )
                 .method("test", boolean.class)
                 .setPublic().setInstance().implementation(cb -> cb
-                        .local("a", int.class)
-                        .local("b", int.class)
-                        .assign(cb.localRef("a"), cb.field("x"))
-                        .assign(cb.localRef("b"), cb.thisCall("f", cb.localVar("a"), cb.set(cb.localRef("a"), cb.field("y"))))
+                        .local("a", int.class, cb.field("x"))
+                        .local("b", int.class, cb.thisCall("f", cb.localVar("a"), cb.set(cb.localRef("a"), cb.field("y"))))
                         .returnVal(cb.gt(cb.set(cb.localRef("a"), cb.field("x")), cb.localVar("b")))
                 );
 

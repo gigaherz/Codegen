@@ -40,7 +40,7 @@ public class CastExpression<T, B> extends ValueExpressionImpl<T, B>
         }
         else if (targetClass.getRawType().isAssignableFrom(expression.effectiveType().getRawType()))
         {
-            throw new IllegalStateException("Not implemented");
+            throw new IllegalStateException("TODO - Not implemented");
         }
         else
         {
@@ -70,7 +70,7 @@ public class CastExpression<T, B> extends ValueExpressionImpl<T, B>
             }
             else if (expression.effectiveType().getRawType().equals(boolean.class))
             {
-                //throw new IllegalStateException("Not implemented");
+                //throw new IllegalStateException("TODO - Not implemented");
 
                 expression.compile(defineConstant, mv, true);
 

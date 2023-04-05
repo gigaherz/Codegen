@@ -19,6 +19,8 @@ public interface CodeBlock<B, M> extends ExpressionBuilder<B, M>
 
     CodeBlock<B, M> local(String name, TypeToken<?> varType);
 
+    CodeBlock<B, M> local(String name, TypeToken<?> varType, ValueExpression<?, B> initializer);
+
     default <T> CodeBlock<B, M> local(VarToken<T> varToken)
     {
         return local(varToken.name(), varToken.type());
@@ -27,6 +29,11 @@ public interface CodeBlock<B, M> extends ExpressionBuilder<B, M>
     default CodeBlock<B, M> local(String name, Class<?> varType)
     {
         return local(name, TypeToken.of(varType));
+    }
+
+    default CodeBlock<B, M> local(String name, Class<?> varType, ValueExpression<?, B> initializer)
+    {
+        return local(name, TypeToken.of(varType), initializer);
     }
 
     void returnVoid();
@@ -41,11 +48,11 @@ public interface CodeBlock<B, M> extends ExpressionBuilder<B, M>
 
     <T, S> ValueExpression<T, B> set(LRef<T> target, ValueExpression<S, B> value);
 
-    CodeBlock<B, M> run(ValueExpression<?, B> value);
+    CodeBlock<B, M> compute(ValueExpression<?, B> value);
 
     default CodeBlock<B, M> assign(LRef<?> target, ValueExpression<?, B> value)
     {
-        return run(set(target, value));
+        return compute(set(target, value));
     }
 
 

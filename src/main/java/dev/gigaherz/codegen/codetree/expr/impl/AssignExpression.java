@@ -29,7 +29,6 @@ public class AssignExpression<T, B> extends ValueExpressionImpl<T, B>
         return target.targetType();
     }
 
-    // TODO: special compile for inner assignments that need the value duplicated
     @Override
     public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult)
     {
