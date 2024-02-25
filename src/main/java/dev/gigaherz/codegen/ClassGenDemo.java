@@ -83,6 +83,15 @@ public class ClassGenDemo
         {
             return super.x;
         }
+
+        public int fib(int val)
+        {
+            return switch(val)
+                    {
+                        case 0, 1 -> 1;
+                        default -> fib(val-1) + fib(val-2);
+                    };
+        }
     }
 
     public interface Vector3I

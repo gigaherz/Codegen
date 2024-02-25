@@ -37,7 +37,7 @@ public class ForBlock<T, B, M> extends InstructionSource
         var startLabel = cb.owner().makeLabel();
         var continueLabel = cb.owner().makeLabel();
 
-        var cbInit = this.cb.<T>childBlock(jumpEnd, continueLabel);
+        var cbInit = this.cb.<T>childBlock(jumpEnd, continueLabel); // FIXME: variables declared in init must be seen by step and body
         var cbStep = this.cb.<T>childBlock(jumpEnd, continueLabel);
         var cbBody = this.cb.<T>childBlock(jumpEnd, continueLabel);
 

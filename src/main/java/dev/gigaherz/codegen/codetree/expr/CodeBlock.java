@@ -9,6 +9,7 @@ import dev.gigaherz.codegen.codetree.impl.LocalVariable;
 import dev.gigaherz.codegen.codetree.impl.MethodImplementation;
 
 import javax.annotation.Nullable;
+import javax.management.ValueExp;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -147,6 +148,9 @@ public interface CodeBlock<B, M> extends ExpressionBuilder<B, M>
 
     <V, S extends V> CodeBlock<B, M> doWhile(Consumer<CodeBlock<B, M>> body, BooleanExpression<?> condition);
 
+    <T extends Number> CodeBlock<B, M> switchNumber(ValueExpression<T, B> value, Consumer<CaseBuilder<T, B, M>> cb);
+    CodeBlock<B, M> switchString(ValueExpression<String, B> value, Consumer<CaseBuilder<String, B, M>> cb);
+    <T extends Enum<T>> CodeBlock<B, M> switchEnum(ValueExpression<T, B> value, Consumer<CaseBuilder<T, B, M>> cb);
 
     MethodLookup<?> method(String name);
 
