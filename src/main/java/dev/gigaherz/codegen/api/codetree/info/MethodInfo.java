@@ -7,12 +7,11 @@ import javax.annotation.Nullable;
 import java.lang.reflect.Modifier;
 import java.util.List;
 
-@SuppressWarnings("UnstableApiUsage")
 public interface MethodInfo<R>
 {
     List<? extends ParamInfo<?>> params();
 
-    TypeToken<R> returnType();
+    TypeProxy<R> returnType();
 
     ClassInfo<?> owner();
 
@@ -33,7 +32,7 @@ public interface MethodInfo<R>
 
         sb.append(")");
 
-        sb.append(TypeProxy.getTypeDescriptor(returnType()));
+        sb.append(returnType().getDescriptor());
 
         return sb.toString();
     }

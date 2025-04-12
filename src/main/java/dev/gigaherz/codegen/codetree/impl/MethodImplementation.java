@@ -394,7 +394,7 @@ public class MethodImplementation<R>
         return null;
     }
 
-    public <T, S, B> ValueExpression<T, B> applyAutomaticCasting(TypeToken<T> targetType, ValueExpression<S, B> value)
+    public <T, S, B> ValueExpression<T, B> applyAutomaticCasting(TypeProxy<T> targetType, ValueExpression<S, B> value)
     {
         var rt = targetType.getRawType();
         var rs = value.effectiveType().getRawType();

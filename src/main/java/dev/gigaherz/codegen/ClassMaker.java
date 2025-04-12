@@ -13,6 +13,7 @@ import dev.gigaherz.codegen.codetree.expr.ExpressionBuilder;
 import dev.gigaherz.codegen.codetree.expr.ValueExpression;
 import dev.gigaherz.codegen.codetree.impl.MethodImplementation;
 import dev.gigaherz.codegen.codetree.impl.SuperCall;
+import dev.gigaherz.codegen.codetree.impl.ThisClass;
 import dev.gigaherz.codegen.type.TypeProxy;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
@@ -246,7 +247,15 @@ public class ClassMaker
         @Override
         public <R> DefineMethod<T, R> method(String name, TypeToken<R> returnType)
         {
-            var m = new MethodImpl<>(name, returnType);
+            var m = new MethodImpl<>(name, TypeProxy.of(returnType));
+            methods.add(m);
+            return m;
+        }
+
+        @Override
+        public DefineMethod<T, T> method(String name, ThisClass thisClass)
+        {
+            var m = new MethodImpl<>(name, this);
             methods.add(m);
             return m;
         }
@@ -559,6 +568,7 @@ public class ClassMaker
             {
                 return ClassImpl.this;
             }
+
         }
 
         private class ConstructorImpl<WorkaroundBecauseJavaIsStupid> extends MethodImpl<Void>
@@ -570,7 +580,7 @@ public class ClassMaker
 
             public ConstructorImpl()
             {
-                super("<init>", TypeToken.of(void.class));
+                super("<init>", TypeProxy.of(void.class));
             }
 
             @Override
@@ -672,12 +682,12 @@ public class ClassMaker
             protected final List<ParamDefinition<?>> params = Lists.newArrayList();
             protected final List<TypeToken<? extends Throwable>> exceptions = Lists.newArrayList();
             protected final String name;
-            protected final TypeToken<R> returnType;
+            protected final TypeProxy<R> returnType;
             protected int modifiers;
             protected Consumer<CodeBlockInternal<R, R>> impl;
 
 
-            public MethodImpl(String name, TypeToken<R> returnType)
+            public MethodImpl(String name, TypeProxy<R> returnType)
             {
                 this.name = name;
                 this.returnType = returnType;
@@ -783,7 +793,7 @@ public class ClassMaker
             }
 
             @Override
-            public TypeToken<R> returnType()
+            public TypeProxy<R> returnType()
             {
                 return returnType;
             }

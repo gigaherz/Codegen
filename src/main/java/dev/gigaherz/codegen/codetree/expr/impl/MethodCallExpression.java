@@ -5,6 +5,7 @@ import dev.gigaherz.codegen.api.codetree.info.MethodInfo;
 import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
 import dev.gigaherz.codegen.codetree.expr.ValueExpression;
 import dev.gigaherz.codegen.codetree.impl.MethodImplementation;
+import dev.gigaherz.codegen.type.TypeProxy;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
@@ -30,9 +31,15 @@ public class MethodCallExpression<R, B> extends ValueExpressionImpl<R, B>
     }
 
     @Override
-    public TypeToken<R> effectiveType()
+    public TypeProxy<R> proxyType()
     {
         return method.returnType();
+    }
+
+    @Override
+    public TypeToken<R> effectiveType()
+    {
+        return method.returnType().actualType();
     }
 
     @Override
@@ -59,7 +66,7 @@ public class MethodCallExpression<R, B> extends ValueExpressionImpl<R, B>
             for (int i = 0; i <= lValues.size(); i++) cb.popStack();
             mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, method.owner().thisType().getInternalName(), method.name(), method.getDescriptor(), method.owner().thisType().isInterface());
         }
-        if (!MethodImplementation.isVoid(method.returnType()))
+        if (!method.returnType().isVoid())
         {
             cb.pushStack(method.returnType());
             if (!needsResult)

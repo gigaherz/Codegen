@@ -3,6 +3,7 @@ package dev.gigaherz.codegen.codetree.expr.impl;
 import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
 import dev.gigaherz.codegen.codetree.expr.ValueExpression;
+import dev.gigaherz.codegen.type.TypeProxy;
 import org.objectweb.asm.MethodVisitor;
 
 import java.util.function.ToIntFunction;
@@ -10,10 +11,10 @@ import java.util.function.ToIntFunction;
 @SuppressWarnings("UnstableApiUsage")
 public class NoopConversion<R, B> extends ValueExpressionImpl<R, B>
 {
-    private final TypeToken<R> targetType;
+    private final TypeProxy<R> targetType;
     private final ValueExpression<?, B> value;
 
-    public NoopConversion(CodeBlockInternal<B, ?> cb, TypeToken<R> targetType, ValueExpression<?, B> value)
+    public NoopConversion(CodeBlockInternal<B, ?> cb, TypeProxy<R> targetType, ValueExpression<?, B> value)
     {
         super(cb);
         this.targetType = targetType;

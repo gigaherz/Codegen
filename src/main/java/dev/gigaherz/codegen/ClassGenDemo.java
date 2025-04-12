@@ -1,5 +1,6 @@
 package dev.gigaherz.codegen;
 
+import dev.gigaherz.codegen.codetree.impl.ThisClass;
 import dev.gigaherz.codegen.tests.Test;
 import dev.gigaherz.codegen.tests.Vector3I;
 
@@ -52,7 +53,13 @@ public class ClassGenDemo
                         .local("a", int.class, cb.field("x"))
                         .local("b", int.class, cb.thisCall("f", cb.localVar("a"), cb.set(cb.localRef("a"), cb.field("y"))))
                         .returnVal(cb.gt(cb.set(cb.localRef("a"), cb.field("z")), cb.localVar("b")))
-                );
+                )
+                /*.method("test2", ThisClass.instance())
+                .setPublic().setInstance().implementation(cb -> cb
+                        .local("a", int.class, cb.field("x"))
+                        .local("b", int.class, cb.thisCall("f", cb.localVar("a"), cb.set(cb.localRef("a"), cb.field("y"))))
+                        .returnVal(cb.gt(cb.set(cb.localRef("a"), cb.field("z")), cb.localVar("b")))
+                )*/;
 
 
         try

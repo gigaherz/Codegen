@@ -3,6 +3,7 @@ package dev.gigaherz.codegen.codetree.expr.impl;
 import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
 import dev.gigaherz.codegen.codetree.expr.ValueExpression;
+import dev.gigaherz.codegen.type.TypeProxy;
 import org.objectweb.asm.MethodVisitor;
 
 import java.util.function.ToIntFunction;
@@ -10,11 +11,11 @@ import java.util.function.ToIntFunction;
 @SuppressWarnings("UnstableApiUsage")
 public class UnaryConversion<R, T, B> extends ValueExpressionImpl<R, B>
 {
-    private final TypeToken<R> targetType;
+    private final TypeProxy<R> targetType;
     private final int opcode;
     private final ValueExpression<T, B> value;
 
-    public UnaryConversion(CodeBlockInternal<B, ?> cb, TypeToken<R> targetType, int opcode, ValueExpression<T, B> value)
+    public UnaryConversion(CodeBlockInternal<B, ?> cb, TypeProxy<R> targetType, int opcode, ValueExpression<T, B> value)
     {
         super(cb);
         this.targetType = targetType;

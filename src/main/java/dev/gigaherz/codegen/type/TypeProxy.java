@@ -105,6 +105,8 @@ public interface TypeProxy<T>
 
     boolean isInterface();
 
+    boolean isVoid();
+
     @Nullable
     Class<? super T> getRawType();
 
@@ -120,6 +122,10 @@ public interface TypeProxy<T>
     }
 
     Constructor<T> getConstructor(Class<?>... parameterTypes) throws NoSuchMethodException, SecurityException;
+
+    <T> boolean isSupertypeOf(TypeToken<T> subclass);
+
+    <T> boolean isSupertypeOf(TypeProxy<T> subclass);
 
     @SuppressWarnings({"UnstableApiUsage"})
     class Token<T> implements TypeProxy<T>
@@ -182,6 +188,12 @@ public interface TypeProxy<T>
         }
 
         @Override
+        public boolean isVoid()
+        {
+            return type.getRawType() == void.class;
+        }
+
+        @Override
         public Class<? super T> getRawType()
         {
             return type.getRawType();
@@ -198,6 +210,18 @@ public interface TypeProxy<T>
         {
             //noinspection unchecked
             return (Constructor<T>) type.getRawType().getConstructor(parameterTypes);
+        }
+
+        @Override
+        public <T1> boolean isSupertypeOf(TypeToken<T1> subclass)
+        {
+            return type.isSupertypeOf(subclass);
+        }
+
+        @Override
+        public <T1> boolean isSupertypeOf(TypeProxy<T1> subclass)
+        {
+            return type.isSupertypeOf(subclass.actualType());
         }
     }
 }

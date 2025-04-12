@@ -3,8 +3,8 @@ package dev.gigaherz.codegen.api;
 import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.api.codetree.info.ClassInfo;
 import dev.gigaherz.codegen.api.codetree.info.MethodInfo;
-import dev.gigaherz.codegen.codetree.expr.CodeBlock;
 import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
+import dev.gigaherz.codegen.codetree.impl.ThisClass;
 
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -23,6 +23,8 @@ public interface DefineClass<C> extends Finishable<ClassDef<C>>
     {
         return field(token.name(), token.type());
     }
+
+    DefineMethod<C, C> method(String name, ThisClass thisClass);
 
     <R> DefineMethod<C, R> method(String name, TypeToken<R> returnType);
 

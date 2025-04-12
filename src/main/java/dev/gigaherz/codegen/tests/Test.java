@@ -55,4 +55,15 @@ public class Test implements Vector3I
         int b = f(a, a = y);
         return (a = z) > b;
     }
+
+    public Test test2()
+    {
+        var t = this;
+        for(int i=0;i<10;i++)
+        {
+            var x = y+z;
+            t = new Test(x,y,z);
+        }
+        return t;
+    }
 }

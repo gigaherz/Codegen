@@ -30,7 +30,7 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
     private final CodeBlock<P, M> parentBlock;
     private final Label breakLabel;
     private final Label continueLabel;
-    private TypeToken<?> returnType;
+    private TypeProxy<?> returnType;
     private final MethodImplementation<M> owner;
     private final List<InstructionSource> instructions = Lists.newArrayList();
     private final Map<String, LocalVariable<?>> locals = new HashMap<>();
@@ -43,7 +43,7 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
         this.continueLabel = continueLabel;
     }
 
-    public CodeBlockImpl(MethodImplementation<M> owner, @Nullable CodeBlock<P, M> parentBlock, TypeToken<B> returnType)
+    public CodeBlockImpl(MethodImplementation<M> owner, @Nullable CodeBlock<P, M> parentBlock, TypeProxy<B> returnType)
     {
         this(owner, parentBlock, null, null);
         this.returnType = returnType;
