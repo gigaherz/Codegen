@@ -787,6 +787,24 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
         throw new IllegalStateException("TODO - Not implemented");
     }
 
+    @Override
+    public <T extends Number> CodeBlock<B, M> switchNumber(ValueExpression<T, B> value, Consumer<CaseBuilder<T, B, M>> cb)
+    {
+        throw new IllegalStateException("TODO - Not implemented");
+    }
+
+    @Override
+    public CodeBlock<B, M> switchString(ValueExpression<String, B> value, Consumer<CaseBuilder<String, B, M>> cb)
+    {
+        throw new IllegalStateException("TODO - Not implemented");
+    }
+
+    @Override
+    public <T extends Enum<T>> CodeBlock<B, M> switchEnum(ValueExpression<T, B> value, Consumer<CaseBuilder<T, B, M>> cb)
+    {
+        throw new IllegalStateException("TODO - Not implemented");
+    }
+
     public MethodImplementation<M> owner()
     {
         return owner;

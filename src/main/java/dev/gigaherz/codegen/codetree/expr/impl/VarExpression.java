@@ -33,7 +33,7 @@ public class VarExpression<T, B> extends ValueExpressionImpl<T, B>
     }
 
     @Override
-    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult)
+    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult, TypeToken<?> returnInsnType)
     {
         cb.beforeExpressionCompile();
         if (needsResult)

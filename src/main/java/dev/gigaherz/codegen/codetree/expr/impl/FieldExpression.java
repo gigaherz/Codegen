@@ -22,6 +22,7 @@ public class FieldExpression<T, B> extends ValueExpressionImpl<T, B>
         this.field = field;
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public TypeToken<T> effectiveType()
     {
@@ -29,13 +30,13 @@ public class FieldExpression<T, B> extends ValueExpressionImpl<T, B>
     }
 
     @Override
-    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult)
+    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult, TypeToken<?> returnInsnType)
     {
         cb.beforeExpressionCompile();
 
         if (needsResult)
         {
-            objRef.compile(defineConstant, mv, true);
+            objRef.compile(defineConstant, mv, true, null);
             FieldLoad.compile(field, mv);
             cb.popStack();
             cb.pushStack(field.type());

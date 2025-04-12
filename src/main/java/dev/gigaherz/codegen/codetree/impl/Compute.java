@@ -23,7 +23,7 @@ public class Compute extends InstructionSource
     {
         mv.visitLabel(mi.makeLabel());
 
-        methodCall.compile(defineConstant, mv, false);
+        methodCall.compile(defineConstant, mv, false, null);
 
         return CompileTerminationMode.NORMAL;
     }

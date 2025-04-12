@@ -23,7 +23,7 @@ public class Do extends InstructionSource
     {
         mv.visitLabel(mi.makeLabel());
 
-        expression.compile(defineConstant, mv, false);
+        expression.compile(defineConstant, mv, false, null);
 
         return CompileTerminationMode.NORMAL;
     }

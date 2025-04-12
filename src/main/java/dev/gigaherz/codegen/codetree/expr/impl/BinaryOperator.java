@@ -31,12 +31,12 @@ public class BinaryOperator<T, B> extends ValueExpressionImpl<T, B>
     }
 
     @Override
-    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult)
+    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult, TypeToken<?> returnInsnType)
     {
         cb.beforeExpressionCompile();
 
-        first.compile(defineConstant, mv, needsResult);
-        second.compile(defineConstant, mv, needsResult);
+        first.compile(defineConstant, mv, needsResult, null);
+        second.compile(defineConstant, mv, needsResult, null);
 
         if (needsResult)
         {

@@ -1,5 +1,8 @@
 package dev.gigaherz.codegen;
 
+import dev.gigaherz.codegen.tests.Test;
+import dev.gigaherz.codegen.tests.Vector3I;
+
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
@@ -7,105 +10,10 @@ import java.nio.file.Path;
 
 public class ClassGenDemo
 {
-    public static class Test implements Vector3I
-    {
-        private final int x;
-        private final int y;
-        private final int z;
-
-        public Test(int x, int y, int z)
-        {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-        }
-
-        public int getX()
-        {
-            return x;
-        }
-
-        public int getY()
-        {
-            return getX();
-        }
-
-        public int getZ()
-        {
-            return z;
-        }
-
-        public int maxCoord()
-        {
-            if (x > y && x > z)
-            {
-                return x;
-            }
-            else if (y > z)
-            {
-                return y;
-            }
-            else
-            {
-                return z;
-            }
-        }
-
-        public int f(int a, int b)
-        {
-            return a+b;
-        }
-
-        public boolean test()
-        {
-            int a = x;
-            int b = f(a,a=y);
-            return (a=z) > b;
-        }
-    }
-
-    public static class Test2 extends Test
-    {
-        public int x;
-
-        public Test2(int x, int y, int z)
-        {
-            super(x, y, z);
-            this.x = x;
-        }
-
-        public int getX()
-        {
-            return x;
-        }
-
-        public int getSuperX()
-        {
-            return super.x;
-        }
-
-        public int fib(int val)
-        {
-            return switch(val)
-                    {
-                        case 0, 1 -> 1;
-                        default -> fib(val-1) + fib(val-2);
-                    };
-        }
-    }
-
-    public interface Vector3I
-    {
-        int getX();
-        int getY();
-        int getZ();
-        boolean test();
-    }
-
     public static void main(String[] args)
     {
         var builder = new ClassMaker(Thread.currentThread().getContextClassLoader()).begin()
-                .setPublic().setFinal()
+                .setPublic()
                 .implementing(Vector3I.class)
                 .field("x", int.class).setPrivate().setFinal()
                 .field("y", int.class).setPrivate().setFinal()
@@ -143,7 +51,7 @@ public class ClassGenDemo
                 .setPublic().setInstance().implementation(cb -> cb
                         .local("a", int.class, cb.field("x"))
                         .local("b", int.class, cb.thisCall("f", cb.localVar("a"), cb.set(cb.localRef("a"), cb.field("y"))))
-                        .returnVal(cb.gt(cb.set(cb.localRef("a"), cb.field("x")), cb.localVar("b")))
+                        .returnVal(cb.gt(cb.set(cb.localRef("a"), cb.field("z")), cb.localVar("b")))
                 );
 
 

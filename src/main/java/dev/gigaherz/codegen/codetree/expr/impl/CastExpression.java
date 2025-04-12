@@ -31,12 +31,12 @@ public class CastExpression<T, B> extends ValueExpressionImpl<T, B>
     }
 
     @Override
-    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult)
+    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult, TypeToken<?> returnInsnType)
     {
         cb.beforeExpressionCompile();
         if (expression.effectiveType().equals(targetClass))
         {
-            expression.compile(defineConstant, mv, needsResult);
+            expression.compile(defineConstant, mv, needsResult, returnInsnType);
         }
         else if (targetClass.getRawType().isAssignableFrom(expression.effectiveType().getRawType()))
         {
@@ -70,9 +70,7 @@ public class CastExpression<T, B> extends ValueExpressionImpl<T, B>
             }
             else if (expression.effectiveType().getRawType().equals(boolean.class))
             {
-                //throw new IllegalStateException("TODO - Not implemented");
-
-                expression.compile(defineConstant, mv, true);
+                expression.compile(defineConstant, mv, true, null);
 
                 cb.popStack();
 
@@ -83,7 +81,8 @@ public class CastExpression<T, B> extends ValueExpressionImpl<T, B>
                 else
                 {
                     mv.visitJumpInsn(Opcodes.IFNE, jumpTrue);
-                    if (jumpFalse != null) mv.visitJumpInsn(Opcodes.GOTO, jumpFalse);
+                    if (jumpFalse != null)
+                        mv.visitJumpInsn(Opcodes.GOTO, jumpFalse);
                 }
             }
             else

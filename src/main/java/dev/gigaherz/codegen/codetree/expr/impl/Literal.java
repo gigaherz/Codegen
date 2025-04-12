@@ -37,7 +37,7 @@ public abstract class Literal<T, B> extends ValueExpressionImpl<T,B>
         }
 
         @Override
-        public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult)
+        public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult, TypeToken<?> returnInsnType)
         {
             var raw = valueType.getRawType();
             if (raw == byte.class ||raw == short.class ||raw == int.class)
@@ -122,7 +122,7 @@ public abstract class Literal<T, B> extends ValueExpressionImpl<T,B>
         }
 
         @Override
-        public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult)
+        public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult, TypeToken<?> returnInsnType)
         {
             throw new IllegalStateException("TODO -- NOT IMPLEMENTED");
         }
@@ -137,7 +137,7 @@ public abstract class Literal<T, B> extends ValueExpressionImpl<T,B>
         }
 
         @Override
-        public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult)
+        public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult, TypeToken<?> returnInsnType)
         {
             throw new IllegalStateException("TODO -- NOT IMPLEMENTED");
         }

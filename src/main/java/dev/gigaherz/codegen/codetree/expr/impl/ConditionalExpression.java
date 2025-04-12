@@ -5,6 +5,7 @@ import dev.gigaherz.codegen.codetree.expr.BooleanExpression;
 import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
 import dev.gigaherz.codegen.codetree.expr.ValueExpression;
 import dev.gigaherz.codegen.codetree.impl.MethodImplementation;
+import dev.gigaherz.codegen.codetree.impl.Return;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -33,7 +34,7 @@ public class ConditionalExpression<T, B> extends ValueExpressionImpl<T, B>
     }
 
     @Override
-    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult)
+    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult, TypeToken<?> returnInsnType)
     {
         cb.beforeExpressionCompile();
 
@@ -41,12 +42,16 @@ public class ConditionalExpression<T, B> extends ValueExpressionImpl<T, B>
         var jumpFalse = new Label();
 
         condition.compile(defineConstant, mv, null, jumpFalse);
-        trueBranch.compile(defineConstant, mv, !MethodImplementation.isVoid(trueBranch.effectiveType()));
-        mv.visitJumpInsn(Opcodes.GOTO, jumpEnd);
+        trueBranch.compile(defineConstant, mv, !MethodImplementation.isVoid(trueBranch.effectiveType()), returnInsnType); // TODO: verify
+        if (returnInsnType != null)
+            Return.compileReturn(returnInsnType, mv);
+        else
+            mv.visitJumpInsn(Opcodes.GOTO, jumpEnd);
         cb.popStack();
         mv.visitLabel(jumpFalse);
-        falseBranch.compile(defineConstant, mv, !MethodImplementation.isVoid(falseBranch.effectiveType()));
-        mv.visitLabel(jumpEnd);
+        falseBranch.compile(defineConstant, mv, !MethodImplementation.isVoid(falseBranch.effectiveType()), null);
+        if (returnInsnType == null)
+            mv.visitLabel(jumpEnd);
 
         cb.afterExpressionCompile(needsResult);
     }

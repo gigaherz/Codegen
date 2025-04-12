@@ -44,7 +44,8 @@ public class IfBlock<T, P, R> extends InstructionSource
         trueBranch.accept(cbTrue);
         var retTrue = cbTrue.compile(defineConstant, mv, null);
 
-        if (!retTrue.isBreak()) mv.visitJumpInsn(Opcodes.GOTO, jumpEnd);
+        if (!retTrue.isBreak())
+            mv.visitJumpInsn(Opcodes.GOTO, jumpEnd);
         mv.visitLabel(jumpFalse);
 
         falseBranch.accept(cbFalse);

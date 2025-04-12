@@ -225,6 +225,7 @@ public class ClassMaker
             copyFrom.constructors.forEach((v) -> constructors.add(new ConstructorImpl(v)));
             copyFrom.methods.forEach((v) -> methods.add(new MethodImpl(v)));
             annotations.addAll(copyFrom.annotations);
+            modifiers = copyFrom.modifiers;
         }
 
         public void implementingInternal(TypeToken<?> interfaceClass)
@@ -299,7 +300,7 @@ public class ClassMaker
 
             var interfaces = superInterfaces.stream().map(iface -> TypeProxy.of(iface).getInternalName()).toArray(String[]::new);
 
-            cw.visit(Opcodes.V16, modifiers | Opcodes.ACC_SUPER, getInternalName(), getSignature(),
+            cw.visit(Opcodes.V21, modifiers | Opcodes.ACC_SUPER, getInternalName(), getSignature(),
                     TypeProxy.of(superClass).getInternalName(),
                     interfaces);
 
@@ -642,7 +643,7 @@ public class ClassMaker
 
                             var val = fi.init.apply(cb);
 
-                            val.compile(cw::newConst, mv, true);
+                            val.compile(cw::newConst, mv, true, null);
 
                             mv.visitFieldInsn(Opcodes.PUTFIELD, this.owner().thisType().getInternalName(), fname, TypeProxy.getTypeDescriptor(fi.fieldType));
                         }

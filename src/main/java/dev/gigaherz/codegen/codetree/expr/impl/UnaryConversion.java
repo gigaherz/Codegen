@@ -29,12 +29,12 @@ public class UnaryConversion<R, T, B> extends ValueExpressionImpl<R, B>
     }
 
     @Override
-    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult)
+    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult, TypeToken<?> returnInsnType)
     {
         cb.beforeExpressionCompile();
         if (needsResult)
         {
-            value.compile(defineConstant, mv, true);
+            value.compile(defineConstant, mv, true, null);
             mv.visitInsn(opcode);
         }
         cb.afterExpressionCompile(needsResult);

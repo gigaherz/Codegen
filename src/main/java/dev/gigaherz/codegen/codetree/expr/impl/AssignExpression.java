@@ -30,7 +30,7 @@ public class AssignExpression<T, B> extends ValueExpressionImpl<T, B>
     }
 
     @Override
-    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult)
+    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult, TypeToken<?> returnInsnType)
     {
         cb.beforeExpressionCompile();
 
@@ -40,7 +40,7 @@ public class AssignExpression<T, B> extends ValueExpressionImpl<T, B>
 
         cb.pushStack(valueSize);
 
-        value.compile(defineConstant, mv, true);
+        value.compile(defineConstant, mv, true, null);
 
         if (needsResult)
         {

@@ -29,7 +29,7 @@ public class ReturnWithValue extends InstructionSource
     {
         mv.visitLabel(cb.owner().makeLabel());
 
-        value.compile(defineConstant, mv, true);
+        value.compile(defineConstant, mv, true, returnType);
 
         Return.compileReturn(returnType, mv);
 

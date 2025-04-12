@@ -36,7 +36,7 @@ public class FieldRef<T, B> extends LRefImpl<T, B>
     @Override
     public void compileBefore(ToIntFunction<Object> defineConstant, MethodVisitor mv)
     {
-        objRef.compile(defineConstant, mv, true);
+        objRef.compile(defineConstant, mv, true, null);
     }
 
     @Override

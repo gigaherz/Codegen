@@ -24,7 +24,7 @@ public class CodeBlockExpression<B, P> extends ValueExpressionImpl<B, P>
     }
 
     @Override
-    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult)
+    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult, TypeToken<?> returnInsnType)
     {
         cb.beforeExpressionCompile();
         thisBlock.compile(defineConstant, mv, needsResult);

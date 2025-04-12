@@ -1,5 +1,6 @@
 package dev.gigaherz.codegen.codetree.expr.impl;
 
+import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
 import dev.gigaherz.codegen.codetree.expr.ValueExpression;
 import org.objectweb.asm.Label;
@@ -20,10 +21,10 @@ public class NotExpression<B> extends BooleanExpressionImpl<B>
     }
 
     @Override
-    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult)
+    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult, TypeToken<?> returnInsnType)
     {
         cb.beforeExpressionCompile();
-        first.compile(defineConstant, mv, needsResult);
+        first.compile(defineConstant, mv, needsResult, null);
         if (needsResult)
         {
             var jumpFalse = new Label();
@@ -50,7 +51,7 @@ public class NotExpression<B> extends BooleanExpressionImpl<B>
         }
         else
         {
-            first.compile(defineConstant, mv, true);
+            first.compile(defineConstant, mv, true, null);
             mv.visitJumpInsn(Opcodes.IFEQ, jumpTrue);
             cb.popStack();
             mv.visitJumpInsn(Opcodes.GOTO, jumpFalse);

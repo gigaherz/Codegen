@@ -121,7 +121,7 @@ public interface TypeProxy<T>
 
     Constructor<T> getConstructor(Class<?>... parameterTypes) throws NoSuchMethodException, SecurityException;
 
-    @SuppressWarnings({"UnstableApiUsage", "ClassCanBeRecord"})
+    @SuppressWarnings({"UnstableApiUsage"})
     class Token<T> implements TypeProxy<T>
     {
         private final TypeToken<T> type;
@@ -196,6 +196,7 @@ public interface TypeProxy<T>
         @Override
         public Constructor<T> getConstructor(Class<?>... parameterTypes) throws NoSuchMethodException, SecurityException
         {
+            //noinspection unchecked
             return (Constructor<T>) type.getRawType().getConstructor(parameterTypes);
         }
     }

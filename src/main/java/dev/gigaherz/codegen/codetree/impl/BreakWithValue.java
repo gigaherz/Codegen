@@ -26,7 +26,7 @@ public class BreakWithValue extends InstructionSource
     {
         mv.visitLabel(cb.owner().makeLabel());
 
-        value.compile(defineConstant, mv, needsResult);
+        value.compile(defineConstant, mv, needsResult, null);
 
         mv.visitJumpInsn(Opcodes.GOTO, cb.breakLabel() != null ? cb.breakLabel() : jumpEnd);
 

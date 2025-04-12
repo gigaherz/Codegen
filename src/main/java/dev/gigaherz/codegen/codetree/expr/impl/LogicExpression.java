@@ -1,5 +1,6 @@
 package dev.gigaherz.codegen.codetree.expr.impl;
 
+import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
 import dev.gigaherz.codegen.codetree.expr.ComparisonType;
 import dev.gigaherz.codegen.codetree.expr.ValueExpression;
@@ -26,7 +27,7 @@ public class LogicExpression<B> extends BooleanExpressionImpl<B>
     }
 
     @Override
-    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult)
+    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult, TypeToken<?> returnInsnType)
     {
         cb.beforeExpressionCompile();
         if (needsResult)
@@ -82,13 +83,14 @@ public class LogicExpression<B> extends BooleanExpressionImpl<B>
                     boolean b = jumpFalse == null;
                     if (b) jumpFalse = new Label();
 
-                    first.compile(defineConstant, mv, true);
+                    first.compile(defineConstant, mv, true, null);
                     mv.visitJumpInsn(Opcodes.IFEQ, jumpFalse);
 
-                    second.compile(defineConstant, mv, true);
+                    second.compile(defineConstant, mv, true, null);
                     mv.visitJumpInsn(Opcodes.IFEQ, jumpFalse);
 
-                    if (jumpTrue != null) mv.visitJumpInsn(Opcodes.GOTO, jumpTrue);
+                    if (jumpTrue != null)
+                        mv.visitJumpInsn(Opcodes.GOTO, jumpTrue);
 
                     if (b) mv.visitLabel(jumpFalse);
                 }
@@ -96,13 +98,14 @@ public class LogicExpression<B> extends BooleanExpressionImpl<B>
                     boolean b = jumpTrue == null;
                     if (b) jumpTrue = new Label();
 
-                    first.compile(defineConstant, mv, true);
+                    first.compile(defineConstant, mv, true, null);
                     mv.visitJumpInsn(Opcodes.IFNE, jumpTrue);
 
-                    second.compile(defineConstant, mv, true);
+                    second.compile(defineConstant, mv, true, null);
                     mv.visitJumpInsn(Opcodes.IFNE, jumpTrue);
 
-                    if (jumpFalse != null) mv.visitJumpInsn(Opcodes.GOTO, jumpFalse);
+                    if (jumpFalse != null)
+                        mv.visitJumpInsn(Opcodes.GOTO, jumpFalse);
 
                     if (b) mv.visitLabel(jumpTrue);
                 }
@@ -112,8 +115,8 @@ public class LogicExpression<B> extends BooleanExpressionImpl<B>
         }
         else
         {
-            first.compile(defineConstant, mv, true);
-            second.compile(defineConstant, mv, true);
+            first.compile(defineConstant, mv, true, null);
+            second.compile(defineConstant, mv, true, null);
 
             if (MethodImplementation.isInteger(first.effectiveType()))
             {
@@ -144,7 +147,8 @@ public class LogicExpression<B> extends BooleanExpressionImpl<B>
                         case NE -> mv.visitJumpInsn(Opcodes.IF_ICMPNE, jumpTrue);
                         default -> throw new IllegalStateException("Cannot use boolean AND/OR with non-boolean data types.");
                     }
-                    if (jumpFalse != null) mv.visitJumpInsn(Opcodes.GOTO, jumpFalse);
+                    if (jumpFalse != null)
+                        mv.visitJumpInsn(Opcodes.GOTO, jumpFalse);
                 }
             }
             else if (MethodImplementation.isFloat(first.effectiveType()))
@@ -178,7 +182,8 @@ public class LogicExpression<B> extends BooleanExpressionImpl<B>
                         case NE -> mv.visitJumpInsn(Opcodes.IFNE, jumpTrue);
                         default -> throw new IllegalStateException("Cannot use boolean AND/OR with non-boolean data types.");
                     }
-                    if (jumpFalse != null) mv.visitJumpInsn(Opcodes.GOTO, jumpFalse);
+                    if (jumpFalse != null)
+                        mv.visitJumpInsn(Opcodes.GOTO, jumpFalse);
                 }
                 cb.popStack();
             }
@@ -213,7 +218,8 @@ public class LogicExpression<B> extends BooleanExpressionImpl<B>
                         case NE -> mv.visitJumpInsn(Opcodes.IFNE, jumpTrue);
                         default -> throw new IllegalStateException("Cannot use boolean AND/OR with non-boolean data types.");
                     }
-                    if (jumpFalse != null) mv.visitJumpInsn(Opcodes.GOTO, jumpFalse);
+                    if (jumpFalse != null)
+                        mv.visitJumpInsn(Opcodes.GOTO, jumpFalse);
                 }
                 cb.popStack();
             }
@@ -248,7 +254,8 @@ public class LogicExpression<B> extends BooleanExpressionImpl<B>
                         case NE -> mv.visitJumpInsn(Opcodes.IFNE, jumpTrue);
                         default -> throw new IllegalStateException("Cannot use boolean AND/OR with non-boolean data types.");
                     }
-                    if (jumpFalse != null) mv.visitJumpInsn(Opcodes.GOTO, jumpFalse);
+                    if (jumpFalse != null)
+                        mv.visitJumpInsn(Opcodes.GOTO, jumpFalse);
                 }
                 cb.popStack();
             }
@@ -273,7 +280,8 @@ public class LogicExpression<B> extends BooleanExpressionImpl<B>
                         case NE -> mv.visitJumpInsn(Opcodes.IF_ACMPNE, jumpTrue);
                         default -> throw new IllegalStateException("Cannot use GT/LT/GE/LE/AND/OR with non-numeric data types.");
                     }
-                    if (jumpFalse != null) mv.visitJumpInsn(Opcodes.GOTO, jumpFalse);
+                    if (jumpFalse != null)
+                        mv.visitJumpInsn(Opcodes.GOTO, jumpFalse);
                 }
             }
         }
