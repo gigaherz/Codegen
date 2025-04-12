@@ -1,6 +1,5 @@
 package dev.gigaherz.codegen.codetree.expr;
 
-import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.api.FieldToken;
 import dev.gigaherz.codegen.codetree.MethodLookup;
 import dev.gigaherz.codegen.type.TypeProxy;
@@ -13,14 +12,12 @@ import java.util.function.ToIntFunction;
 @SuppressWarnings("UnstableApiUsage")
 public interface ValueExpression<T, B> extends Expr<B>
 {
-    TypeToken<T> effectiveType();
-
-    TypeProxy<T> proxyType();
+    TypeProxy<T> effectiveType();
 
     default <T1> ValueExpression<T1, B> cast(Class<T1> targetClass) {
-        return cast(TypeToken.of(targetClass));
+        return cast(TypeProxy.of(targetClass));
     }
-    <T1> ValueExpression<T1, B> cast(TypeToken<T1> targetClass);
+    <T1> ValueExpression<T1, B> cast(TypeProxy<T1> targetClass);
     BooleanExpression<B> castToBool();
 
     LRef<?> fieldRef(String fieldName);
@@ -82,6 +79,6 @@ public interface ValueExpression<T, B> extends Expr<B>
 
     <R> ValueExpression<R, B> methodCall(String methodName, Function<MethodLookup<T>, MethodLookup<T>> methodLookup, List<ValueExpression<?, B>> values);
 
-    void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult, TypeToken<?> returnInsnType);
+    void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult, TypeProxy<?> returnInsnType);
 }
 

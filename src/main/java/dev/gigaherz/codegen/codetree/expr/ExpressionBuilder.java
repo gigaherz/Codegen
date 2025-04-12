@@ -1,9 +1,9 @@
 package dev.gigaherz.codegen.codetree.expr;
 
-import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.api.FieldToken;
 import dev.gigaherz.codegen.api.VarToken;
 import dev.gigaherz.codegen.codetree.MethodLookup;
+import dev.gigaherz.codegen.type.TypeProxy;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -17,11 +17,11 @@ public interface ExpressionBuilder<B, M>
 
     ValueExpression<?, B> fieldOf(ValueExpression<?, B> objRef, String fieldName);
 
-    ValueExpression<?, B> staticField(TypeToken<?> type, String fieldName);
+    ValueExpression<?, B> staticField(TypeProxy<?> type, String fieldName);
 
     default ValueExpression<?, B> staticField(Class<?> type, String fieldName)
     {
-        return staticField(TypeToken.of(type), fieldName);
+        return staticField(TypeProxy.of(type), fieldName);
     }
 
     ValueExpression<?, B> thisVar();
@@ -112,59 +112,59 @@ public interface ExpressionBuilder<B, M>
 
     <R, T> ValueExpression<R, B> methodCall(ValueExpression<T, B> objRef, String methodName, Function<MethodLookup<T>, MethodLookup<T>> methodLookup, List<ValueExpression<?, B>> values);
 
-    default <R> ValueExpression<R, B> staticCall(TypeToken<?> classToken, String methodName)
+    default <R> ValueExpression<R, B> staticCall(TypeProxy<?> classToken, String methodName)
     {
         return staticCall(classToken, methodName, List.of());
     }
 
-    default <R> ValueExpression<R, B> staticCall(TypeToken<?> classToken, String methodName, ValueExpression<?, B> val0)
+    default <R> ValueExpression<R, B> staticCall(TypeProxy<?> classToken, String methodName, ValueExpression<?, B> val0)
     {
         return staticCall(classToken, methodName, List.of(val0));
     }
 
-    default <R> ValueExpression<R, B> staticCall(TypeToken<?> classToken, String methodName, ValueExpression<?, B> val0, ValueExpression<?, B> val1)
+    default <R> ValueExpression<R, B> staticCall(TypeProxy<?> classToken, String methodName, ValueExpression<?, B> val0, ValueExpression<?, B> val1)
     {
         return staticCall(classToken, methodName, List.of(val0, val1));
     }
 
-    default <R> ValueExpression<R, B> staticCall(TypeToken<?> classToken, String methodName, ValueExpression<?, B> val0, ValueExpression<?, B> val1, ValueExpression<?, B> val2)
+    default <R> ValueExpression<R, B> staticCall(TypeProxy<?> classToken, String methodName, ValueExpression<?, B> val0, ValueExpression<?, B> val1, ValueExpression<?, B> val2)
     {
         return staticCall(classToken, methodName, List.of(val0, val1, val2));
     }
 
-    default <R> ValueExpression<R, B> staticCall(TypeToken<?> classToken, String methodName, ValueExpression<?, B> val0, ValueExpression<?, B> val1, ValueExpression<?, B> val2, ValueExpression<?, B> val3)
+    default <R> ValueExpression<R, B> staticCall(TypeProxy<?> classToken, String methodName, ValueExpression<?, B> val0, ValueExpression<?, B> val1, ValueExpression<?, B> val2, ValueExpression<?, B> val3)
     {
         return staticCall(classToken, methodName, List.of(val0, val1, val2, val3));
     }
 
-    <R> ValueExpression<R, B> staticCall(TypeToken<?> classToken, String methodName, List<ValueExpression<?, B>> values);
+    <R> ValueExpression<R, B> staticCall(TypeProxy<?> classToken, String methodName, List<ValueExpression<?, B>> values);
 
-    default <T> ValueExpression<?, B> staticCall(TypeToken<T> classToken, String methodName, Function<MethodLookup<T>, MethodLookup<T>> methodLookup)
+    default <T> ValueExpression<?, B> staticCall(TypeProxy<T> classToken, String methodName, Function<MethodLookup<T>, MethodLookup<T>> methodLookup)
     {
         return staticCall(classToken, methodName, methodLookup, List.of());
     }
 
-    default <R, T> ValueExpression<R, B> staticCall(TypeToken<T> classToken, String methodName, Function<MethodLookup<T>, MethodLookup<T>> methodLookup, ValueExpression<?, B> val0)
+    default <R, T> ValueExpression<R, B> staticCall(TypeProxy<T> classToken, String methodName, Function<MethodLookup<T>, MethodLookup<T>> methodLookup, ValueExpression<?, B> val0)
     {
         return staticCall(classToken, methodName, methodLookup, List.of(val0));
     }
 
-    default <R, T> ValueExpression<R, B> staticCall(TypeToken<T> classToken, String methodName, Function<MethodLookup<T>, MethodLookup<T>> methodLookup, ValueExpression<?, B> val0, ValueExpression<?, B> val1)
+    default <R, T> ValueExpression<R, B> staticCall(TypeProxy<T> classToken, String methodName, Function<MethodLookup<T>, MethodLookup<T>> methodLookup, ValueExpression<?, B> val0, ValueExpression<?, B> val1)
     {
         return staticCall(classToken, methodName, methodLookup, List.of(val0, val1));
     }
 
-    default <R, T> ValueExpression<R, B> staticCall(TypeToken<T> classToken, String methodName, Function<MethodLookup<T>, MethodLookup<T>> methodLookup, ValueExpression<?, B> val0, ValueExpression<?, B> val1, ValueExpression<?, B> val2)
+    default <R, T> ValueExpression<R, B> staticCall(TypeProxy<T> classToken, String methodName, Function<MethodLookup<T>, MethodLookup<T>> methodLookup, ValueExpression<?, B> val0, ValueExpression<?, B> val1, ValueExpression<?, B> val2)
     {
         return staticCall(classToken, methodName, methodLookup, List.of(val0, val1, val2));
     }
 
-    default <R, T> ValueExpression<R, B> staticCall(TypeToken<T> classToken, String methodName, Function<MethodLookup<T>, MethodLookup<T>> methodLookup, ValueExpression<?, B> val0, ValueExpression<?, B> val1, ValueExpression<?, B> val2, ValueExpression<?, B> val3)
+    default <R, T> ValueExpression<R, B> staticCall(TypeProxy<T> classToken, String methodName, Function<MethodLookup<T>, MethodLookup<T>> methodLookup, ValueExpression<?, B> val0, ValueExpression<?, B> val1, ValueExpression<?, B> val2, ValueExpression<?, B> val3)
     {
         return staticCall(classToken, methodName, methodLookup, List.of(val0, val1, val2, val3));
     }
 
-    <R, T> ValueExpression<R, B> staticCall(TypeToken<T> classToken, String methodName, Function<MethodLookup<T>, MethodLookup<T>> methodLookup, List<ValueExpression<?, B>> values);
+    <R, T> ValueExpression<R, B> staticCall(TypeProxy<T> classToken, String methodName, Function<MethodLookup<T>, MethodLookup<T>> methodLookup, List<ValueExpression<?, B>> values);
 
     default <R> ValueExpression<R, B> staticCall(Class<?> classToken, String methodName)
     {
@@ -193,7 +193,7 @@ public interface ExpressionBuilder<B, M>
 
     default <R> ValueExpression<R, B> staticCall(Class<?> classToken, String methodName, List<ValueExpression<?, B>> values)
     {
-        return this.staticCall(TypeToken.of(classToken), methodName, values);
+        return this.staticCall(TypeProxy.of(classToken), methodName, values);
     }
 
     default <R, T> ValueExpression<R, B> staticCall(Class<T> classToken, String methodName, Function<MethodLookup<T>, MethodLookup<T>> methodLookup)
@@ -223,7 +223,7 @@ public interface ExpressionBuilder<B, M>
 
     default <R, T> ValueExpression<R, B> staticCall(Class<T> classToken, String methodName, Function<MethodLookup<T>, MethodLookup<T>> methodLookup, List<ValueExpression<?, B>> values)
     {
-        return this.staticCall(TypeToken.of(classToken), methodName, methodLookup, values);
+        return this.staticCall(TypeProxy.of(classToken), methodName, methodLookup, values);
     }
 
     <C> ValueExpression<C, B> iif(BooleanExpression<B> condition, ValueExpression<C, B> trueBranch, ValueExpression<C, B> falseBranch);

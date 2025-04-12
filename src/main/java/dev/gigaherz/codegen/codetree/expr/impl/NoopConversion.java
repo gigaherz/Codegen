@@ -1,6 +1,5 @@
 package dev.gigaherz.codegen.codetree.expr.impl;
 
-import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
 import dev.gigaherz.codegen.codetree.expr.ValueExpression;
 import dev.gigaherz.codegen.type.TypeProxy;
@@ -22,13 +21,13 @@ public class NoopConversion<R, B> extends ValueExpressionImpl<R, B>
     }
 
     @Override
-    public TypeToken<R> effectiveType()
+    public TypeProxy<R> effectiveType()
     {
         return targetType;
     }
 
     @Override
-    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult, TypeToken<?> returnInsnType)
+    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult, TypeProxy<?> returnInsnType)
     {
         cb.beforeExpressionCompile();
         value.compile(defineConstant, mv, needsResult, returnInsnType);

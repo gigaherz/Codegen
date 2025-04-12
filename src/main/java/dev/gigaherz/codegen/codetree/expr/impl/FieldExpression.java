@@ -1,10 +1,10 @@
 package dev.gigaherz.codegen.codetree.expr.impl;
 
-import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.api.codetree.info.FieldInfo;
 import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
 import dev.gigaherz.codegen.codetree.expr.ValueExpression;
 import dev.gigaherz.codegen.codetree.impl.FieldLoad;
+import dev.gigaherz.codegen.type.TypeProxy;
 import org.objectweb.asm.MethodVisitor;
 
 import java.util.function.ToIntFunction;
@@ -24,13 +24,13 @@ public class FieldExpression<T, B> extends ValueExpressionImpl<T, B>
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
-    public TypeToken<T> effectiveType()
+    public TypeProxy<T> effectiveType()
     {
-        return (TypeToken) field.type();
+        return (TypeProxy) field.type();
     }
 
     @Override
-    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult, TypeToken<?> returnInsnType)
+    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult, TypeProxy<?> returnInsnType)
     {
         cb.beforeExpressionCompile();
 

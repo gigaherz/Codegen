@@ -1,9 +1,9 @@
 package dev.gigaherz.codegen.codetree.impl;
 
-import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.codetree.CompileTerminationMode;
 import dev.gigaherz.codegen.codetree.expr.CodeBlock;
 import dev.gigaherz.codegen.codetree.expr.ValueExpression;
+import dev.gigaherz.codegen.type.TypeProxy;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 
@@ -13,11 +13,11 @@ import java.util.function.ToIntFunction;
 public class ReturnWithValue extends InstructionSource
 {
     private final CodeBlock<?, ?> cb;
-    private final TypeToken<?> returnType;
+    private final TypeProxy<?> returnType;
 
     private final ValueExpression<?, ?> value;
 
-    public ReturnWithValue(CodeBlock<?, ?> cb, TypeToken<?> returnType, ValueExpression<?, ?> value)
+    public ReturnWithValue(CodeBlock<?, ?> cb, TypeProxy<?> returnType, ValueExpression<?, ?> value)
     {
         this.cb = cb;
         this.returnType = returnType;

@@ -1,8 +1,8 @@
 package dev.gigaherz.codegen.codetree.expr.impl;
 
-import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
 import dev.gigaherz.codegen.codetree.expr.ValueExpression;
+import dev.gigaherz.codegen.type.TypeProxy;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -21,7 +21,7 @@ public class NotExpression<B> extends BooleanExpressionImpl<B>
     }
 
     @Override
-    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult, TypeToken<?> returnInsnType)
+    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult, TypeProxy<?> returnInsnType)
     {
         cb.beforeExpressionCompile();
         first.compile(defineConstant, mv, needsResult, null);

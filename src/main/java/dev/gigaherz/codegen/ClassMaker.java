@@ -50,11 +50,11 @@ public class ClassMaker
 
     public static <T> FieldToken<T> fieldToken(String name, Class<T> type)
     {
-        final TypeToken<T> typeToken = TypeToken.of(type);
+        final TypeProxy<T> typeToken = TypeProxy.of(type);
         return fieldToken(name, typeToken);
     }
 
-    private static <T> FieldToken<T> fieldToken(String name, TypeToken<T> typeToken)
+    private static <T> FieldToken<T> fieldToken(String name, TypeProxy<T> typeToken)
     {
         return new FieldToken<T>()
         {
@@ -65,7 +65,7 @@ public class ClassMaker
             }
 
             @Override
-            public TypeToken<T> type()
+            public TypeProxy<T> type()
             {
                 return typeToken;
             }
@@ -74,11 +74,11 @@ public class ClassMaker
 
     public static <T> VarToken<T> varToken(String name, Class<T> type)
     {
-        final TypeToken<T> typeToken = TypeToken.of(type);
+        final TypeProxy<T> typeToken = TypeProxy.of(type);
         return varToken(name, typeToken);
     }
 
-    private static <T> VarToken<T> varToken(String name, TypeToken<T> typeToken)
+    private static <T> VarToken<T> varToken(String name, TypeProxy<T> typeToken)
     {
         return new VarToken<T>()
         {
@@ -89,7 +89,7 @@ public class ClassMaker
             }
 
             @Override
-            public TypeToken<T> type()
+            public TypeProxy<T> type()
             {
                 return typeToken;
             }
@@ -101,11 +101,11 @@ public class ClassMaker
 
         public BasicClassImpl()
         {
-            super(TypeToken.of(Object.class));
+            super(TypeProxy.of(Object.class));
         }
 
         @Override
-        public <T> ClassDefTyped<? extends T> extending(TypeToken<T> baseClass)
+        public <T> ClassDefTyped<? extends T> extending(TypeProxy<T> baseClass)
         {
             Class<? super T> rawType = baseClass.getRawType();
             if (baseClass.isArray())
@@ -120,7 +120,7 @@ public class ClassMaker
         }
 
         @Override
-        public <I> ClassDefTyped<? extends I> implementing(TypeToken<I> interfaceClass)
+        public <I> ClassDefTyped<? extends I> implementing(TypeProxy<I> interfaceClass)
         {
             implementingInternal(interfaceClass);
             return new ClassImplTyped<>(this.superClass(), this);
@@ -178,32 +178,32 @@ public class ClassMaker
 
     public class ClassImplTyped<C, T extends C> extends ClassImpl<C, T> implements ClassDefTyped<T>
     {
-        public ClassImplTyped(TypeToken<C> baseClass)
+        public ClassImplTyped(TypeProxy<C> baseClass)
         {
             super(baseClass);
         }
 
-        public ClassImplTyped(TypeToken<C> baseClass, BasicClassImpl copyFrom)
+        public ClassImplTyped(TypeProxy<C> baseClass, BasicClassImpl copyFrom)
         {
             super(baseClass, copyFrom);
         }
 
         @Override
-        public ClassDefTyped<T> implementing(TypeToken<?> interfaceClass)
+        public ClassDefTyped<T> implementing(TypeProxy<?> interfaceClass)
         {
             implementingInternal(interfaceClass);
             return this;
         }
     }
 
-    public abstract class ClassImpl<C, T extends C> implements ClassDef<T>
+    private abstract class ClassImpl<C, T extends C> implements ClassDef<T>
     {
         protected final List<Annotation> annotations = Lists.newArrayList();
         protected final List<FieldImpl<?>> fields = Lists.newArrayList();
         protected final List<ConstructorImpl<?>> constructors = Lists.newArrayList();
         protected final List<MethodImpl<?>> methods = Lists.newArrayList();
-        protected final TypeToken<C> superClass;
-        protected final List<TypeToken<?>> superInterfaces = Lists.newArrayList();
+        protected final TypeProxy<C> superClass;
+        protected final List<TypeProxy<?>> superInterfaces = Lists.newArrayList();
         protected int modifiers;
 
         private static int nextClassId = 1;
@@ -211,13 +211,13 @@ public class ClassMaker
         protected String name = /*this.getClass().getPackageName() + "." + */ "C" + classId;
         protected String fullName = this.getClass().getPackageName() + "." + name;
 
-        public ClassImpl(TypeToken<C> baseClass)
+        public ClassImpl(TypeProxy<C> baseClass)
         {
             this.superClass = baseClass;
         }
 
         @SuppressWarnings({"unchecked", "rawtypes"})
-        public ClassImpl(TypeToken<C> baseClass, BasicClassImpl copyFrom)
+        public ClassImpl(TypeProxy<C> baseClass, BasicClassImpl copyFrom)
         {
             this(baseClass);
 
@@ -229,7 +229,7 @@ public class ClassMaker
             modifiers = copyFrom.modifiers;
         }
 
-        public void implementingInternal(TypeToken<?> interfaceClass)
+        public void implementingInternal(TypeProxy<?> interfaceClass)
         {
             if (!interfaceClass.getRawType().isInterface())
                 throw new IllegalStateException("The provided class " + interfaceClass + " is not an interface!");
@@ -237,7 +237,7 @@ public class ClassMaker
         }
 
         @Override
-        public <F> DefineField<T, F> field(String name, TypeToken<F> fieldType)
+        public <F> DefineField<T, F> field(String name, TypeProxy<F> fieldType)
         {
             FieldImpl<F> field = new FieldImpl<>(name, fieldType);
             fields.add(field);
@@ -245,9 +245,9 @@ public class ClassMaker
         }
 
         @Override
-        public <R> DefineMethod<T, R> method(String name, TypeToken<R> returnType)
+        public <R> DefineMethod<T, R> method(String name, TypeProxy<R> returnType)
         {
-            var m = new MethodImpl<>(name, TypeProxy.of(returnType));
+            var m = new MethodImpl<>(name, returnType);
             methods.add(m);
             return m;
         }
@@ -287,7 +287,7 @@ public class ClassMaker
                 var cargs = ccon.setInstance();
                 for(ParamInfo<?> param : superConstructor.params())
                 {
-                    cargs.param(param.paramType().actualType()).withName(param.name());
+                    cargs.param(param.paramType()).withName(param.name());
                 }
 
                 cargs.implementation(cb);
@@ -307,10 +307,10 @@ public class ClassMaker
         {
             var cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
 
-            var interfaces = superInterfaces.stream().map(iface -> TypeProxy.of(iface).getInternalName()).toArray(String[]::new);
+            var interfaces = superInterfaces.stream().map(TypeProxy::getInternalName).toArray(String[]::new);
 
             cw.visit(Opcodes.V21, modifiers | Opcodes.ACC_SUPER, getInternalName(), getSignature(),
-                    TypeProxy.of(superClass).getInternalName(),
+                    superClass.getInternalName(),
                     interfaces);
 
                 /*for(var ann : annotations)
@@ -322,7 +322,7 @@ public class ClassMaker
             {
                 var fname = fi.name;
 
-                var fv = cw.visitField(fi.modifiers, fname, TypeProxy.getTypeDescriptor(fi.fieldType), TypeProxy.getTypeSignature(fi.fieldType), null);
+                var fv = cw.visitField(fi.modifiers, fname, fi.fieldType.getDescriptor(), fi.fieldType.getSignature(), null);
 
                     /*for(var ann : fi.annotations)
                     {
@@ -412,6 +412,30 @@ public class ClassMaker
             return false;
         }
 
+        @Override
+        public boolean isVoid()
+        {
+            return false;
+        }
+
+        @Override
+        public <T1> boolean isSupertypeOf(TypeProxy<T1> subclass)
+        {
+            return false; // TODO
+        }
+
+        @Override
+        public TypeProxy<? super T> getSuperclass()
+        {
+            return superClass();
+        }
+
+        @Override
+        public boolean isDynamic()
+        {
+            return true;
+        }
+
         @Nullable
         @Override
         public Class<? super T> getRawType()
@@ -420,7 +444,7 @@ public class ClassMaker
         }
 
         @Override
-        public TypeToken<? super C> superClass()
+        public TypeProxy<? super C> superClass()
         {
             return superClass;
         }
@@ -470,12 +494,12 @@ public class ClassMaker
         private class FieldImpl<F> implements DefineField<T, F>, FieldInfo<F>
         {
             protected final List<Annotation> annotations = Lists.newArrayList();
-            protected final TypeToken<F> fieldType;
+            protected final TypeProxy<F> fieldType;
             protected int modifiers;
             protected Function<ExpressionBuilder<?, ?>, ValueExpression<F, ?>> init;
             protected String name;
 
-            private FieldImpl(String name, TypeToken<F> fieldType)
+            private FieldImpl(String name, TypeProxy<F> fieldType)
             {
                 this.name = name;
                 this.fieldType = fieldType;
@@ -558,7 +582,7 @@ public class ClassMaker
             }
 
             @Override
-            public TypeToken<F> type()
+            public TypeProxy<F> type()
             {
                 return this.fieldType;
             }
@@ -621,9 +645,9 @@ public class ClassMaker
                     {
                         // super
 
-                        if (insns.size() > 0 && insns.get(0) instanceof SuperCall sc)
+                        if (!insns.isEmpty() && insns.get(0) instanceof SuperCall sc)
                         {
-                            insns.remove(0);
+                            insns.removeFirst();
 
                             sc.compile(cw::newConst, mv, endLabel, false);
                         }
@@ -633,7 +657,7 @@ public class ClassMaker
 
                             mv.visitLabel(startLabel);
                             mv.visitVarInsn(Opcodes.ALOAD, 0);
-                            mv.visitMethodInsn(Opcodes.INVOKESPECIAL, TypeProxy.of(superClass).getInternalName(), "<init>", "()V", false);
+                            mv.visitMethodInsn(Opcodes.INVOKESPECIAL, superClass.getInternalName(), "<init>", "()V", false);
                         }
                     }
 
@@ -655,7 +679,7 @@ public class ClassMaker
 
                             val.compile(cw::newConst, mv, true, null);
 
-                            mv.visitFieldInsn(Opcodes.PUTFIELD, this.owner().thisType().getInternalName(), fname, TypeProxy.getTypeDescriptor(fi.fieldType));
+                            mv.visitFieldInsn(Opcodes.PUTFIELD, this.owner().thisType().getInternalName(), fname, fi.fieldType.getDescriptor());
                         }
                     }
 
@@ -680,7 +704,7 @@ public class ClassMaker
         {
             protected final List<Annotation> annotations = Lists.newArrayList();
             protected final List<ParamDefinition<?>> params = Lists.newArrayList();
-            protected final List<TypeToken<? extends Throwable>> exceptions = Lists.newArrayList();
+            protected final List<TypeProxy<? extends Throwable>> exceptions = Lists.newArrayList();
             protected final String name;
             protected final TypeProxy<R> returnType;
             protected int modifiers;
@@ -780,8 +804,8 @@ public class ClassMaker
             @Nullable
             public String[] getExceptions()
             {
-                if (exceptions.size() > 0)
-                    return exceptions.stream().map(ex -> TypeProxy.of(ex).getInternalName()).toArray(String[]::new);
+                if (!exceptions.isEmpty())
+                    return exceptions.stream().map(TypeProxy::getInternalName).toArray(String[]::new);
 
                 return null;
             }
@@ -915,9 +939,9 @@ public class ClassMaker
             private class DefineArgsImpl0 extends Impl implements DefineArgs0<T, R>
             {
                 @Override
-                public <P> DefineArgs1<T, R, P> param(TypeToken<P> paramClass)
+                public <P> DefineArgs1<T, R, P> param(TypeProxy<P> paramClass)
                 {
-                    return new DefineArgsImpl1<>(addParam(TypeProxy.of(paramClass)));
+                    return new DefineArgsImpl1<>(addParam(paramClass));
                 }
             }
 
@@ -930,9 +954,9 @@ public class ClassMaker
                 }
 
                 @Override
-                public <P> DefineArgs2<T, R, P0, P> param(TypeToken<P> paramClass)
+                public <P> DefineArgs2<T, R, P0, P> param(TypeProxy<P> paramClass)
                 {
-                    return new DefineArgsImpl2<>(addParam(TypeProxy.of(paramClass)));
+                    return new DefineArgsImpl2<>(addParam(paramClass));
                 }
             }
 
@@ -946,9 +970,9 @@ public class ClassMaker
                 }
 
                 @Override
-                public <P> DefineArgs3<T, R, P0, P1, P> param(TypeToken<P> paramClass)
+                public <P> DefineArgs3<T, R, P0, P1, P> param(TypeProxy<P> paramClass)
                 {
-                    return new DefineArgsImpl3<>(addParam(TypeProxy.of(paramClass)));
+                    return new DefineArgsImpl3<>(addParam(paramClass));
                 }
             }
 
@@ -962,9 +986,9 @@ public class ClassMaker
                 }
 
                 @Override
-                public <P> DefineArgs4<T, R, P0, P1, P2, P> param(TypeToken<P> paramClass)
+                public <P> DefineArgs4<T, R, P0, P1, P2, P> param(TypeProxy<P> paramClass)
                 {
-                    return new DefineArgsImpl4<>(addParam(TypeProxy.of(paramClass)));
+                    return new DefineArgsImpl4<>(addParam(paramClass));
                 }
             }
 
@@ -978,9 +1002,9 @@ public class ClassMaker
                 }
 
                 @Override
-                public <P> DefineArgs5<T, R, P0, P1, P2, P3, P> param(TypeToken<P> paramClass)
+                public <P> DefineArgs5<T, R, P0, P1, P2, P3, P> param(TypeProxy<P> paramClass)
                 {
-                    return new DefineArgsImpl5<>(addParam(TypeProxy.of(paramClass)));
+                    return new DefineArgsImpl5<>(addParam(paramClass));
                 }
             }
 
@@ -995,9 +1019,9 @@ public class ClassMaker
                 }
 
                 @Override
-                public <P> DefineArgs6<T, R, P0, P1, P2, P3, P4, P> param(TypeToken<P> paramClass)
+                public <P> DefineArgs6<T, R, P0, P1, P2, P3, P4, P> param(TypeProxy<P> paramClass)
                 {
-                    return new DefineArgsImpl6<>(addParam(TypeProxy.of(paramClass)));
+                    return new DefineArgsImpl6<>(addParam(paramClass));
                 }
             }
 
@@ -1012,9 +1036,9 @@ public class ClassMaker
                 }
 
                 @Override
-                public <P> DefineArgs7<T, R, P0, P1, P2, P3, P4, P5, P> param(TypeToken<P> paramClass)
+                public <P> DefineArgs7<T, R, P0, P1, P2, P3, P4, P5, P> param(TypeProxy<P> paramClass)
                 {
-                    return new DefineArgsImpl7<>(addParam(TypeProxy.of(paramClass)));
+                    return new DefineArgsImpl7<>(addParam(paramClass));
                 }
             }
 
@@ -1029,9 +1053,9 @@ public class ClassMaker
                 }
 
                 @Override
-                public <P> DefineArgs8<T, R, P0, P1, P2, P3, P4, P5, P6, P> param(TypeToken<P> paramClass)
+                public <P> DefineArgs8<T, R, P0, P1, P2, P3, P4, P5, P6, P> param(TypeProxy<P> paramClass)
                 {
-                    return new DefineArgsImpl8<>(addParam(TypeProxy.of(paramClass)));
+                    return new DefineArgsImpl8<>(addParam(paramClass));
                 }
             }
 

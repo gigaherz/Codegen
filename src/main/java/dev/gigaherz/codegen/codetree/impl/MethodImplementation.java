@@ -2,7 +2,6 @@ package dev.gigaherz.codegen.codetree.impl;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
-import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.api.codetree.info.MethodInfo;
 import dev.gigaherz.codegen.api.codetree.info.ParamInfo;
 import dev.gigaherz.codegen.codetree.ClassData;
@@ -40,11 +39,6 @@ public class MethodImplementation<R>
     public int stackSize = 0;
     public int localsSize = 0;
     private Label firstLabel;
-
-    public void pushStack(TypeToken<?> type)
-    {
-        pushStack(MethodImplementation.slotCount(type));
-    }
 
     public void pushStack(TypeProxy<?> type)
     {
@@ -95,7 +89,7 @@ public class MethodImplementation<R>
 
         if (!methodInfo.isStatic())
         {
-            localsSize += makeLocal(0, methodInfo.owner().thisType(), TypeProxy.of(methodInfo.owner().superClass()), "this").slotCount;
+            localsSize += makeLocal(0, methodInfo.owner().thisType(), methodInfo.owner().superClass(), "this").slotCount;
         }
 
         for (ParamInfo<?> f : methodInfo.params())
@@ -151,24 +145,6 @@ public class MethodImplementation<R>
         return slotCount;
     }
 
-    public static int slotCount(TypeToken<?> effectiveType)
-    {
-        int slotCount = 1;
-        if (effectiveType.isPrimitive())
-        {
-            Class<?> rawType = effectiveType.getRawType();
-            if (rawType == long.class)
-            {
-                slotCount = 2;
-            }
-            else if (rawType == double.class)
-            {
-                slotCount = 2;
-            }
-        }
-        return slotCount;
-    }
-
     public static <R> MethodImplementation<R> begin(MethodInfo<R> methodInfo, Label startLabel)
     {
         return new MethodImplementation<>(methodInfo, startLabel);
@@ -193,7 +169,7 @@ public class MethodImplementation<R>
         return locals.stream().filter(local -> local.index == localNumber).findFirst().orElseThrow(() -> new IllegalStateException("No local or parameter with index " + localNumber));
     }
 
-    public static TypeToken<?> applyAutomaticCasting(TypeToken<?> targetType, TypeToken<?> valueType)
+    public static TypeProxy<?> applyAutomaticCasting(TypeProxy<?> targetType, TypeProxy<?> valueType)
     {
         var rt = targetType.getRawType();
         var rs = valueType.getRawType();
@@ -322,7 +298,7 @@ public class MethodImplementation<R>
         return valueType;
     }
 
-    public static boolean isInteger(TypeToken<?> tt)
+    public static boolean isInteger(TypeProxy<?> tt)
     {
         return tt.isPrimitive() && isInteger(tt.getRawType());
     }
@@ -332,7 +308,7 @@ public class MethodImplementation<R>
         return rs == int.class || rs == byte.class || rs == short.class || rs == char.class;
     }
 
-    public static boolean isFloat(TypeToken<?> tt)
+    public static boolean isFloat(TypeProxy<?> tt)
     {
         return tt.isPrimitive() && isFloat(tt.getRawType());
     }
@@ -342,7 +318,7 @@ public class MethodImplementation<R>
         return rs == float.class;
     }
 
-    public static boolean isDouble(TypeToken<?> tt)
+    public static boolean isDouble(TypeProxy<?> tt)
     {
         return tt.isPrimitive() && isDouble(tt.getRawType());
     }
@@ -352,7 +328,7 @@ public class MethodImplementation<R>
         return rs == double.class;
     }
 
-    public static boolean isLong(TypeToken<?> tt)
+    public static boolean isLong(TypeProxy<?> tt)
     {
         return tt.isPrimitive() && isLong(tt.getRawType());
     }
@@ -362,7 +338,7 @@ public class MethodImplementation<R>
         return rs == long.class;
     }
 
-    public static boolean isBoolean(TypeToken<?> tt)
+    public static boolean isBoolean(TypeProxy<?> tt)
     {
         return tt.isPrimitive() && isBoolean(tt.getRawType());
     }
@@ -372,25 +348,25 @@ public class MethodImplementation<R>
         return rs == boolean.class;
     }
 
-    public static boolean isVoid(TypeToken<?> tt)
+    public static boolean isVoid(TypeProxy<?> tt)
     {
         return tt.getRawType() == void.class;
     }
 
-    public TypeToken<?> computeArithmeticResultType(TypeToken<?> a, TypeToken<?> b)
+    public TypeProxy<?> computeArithmeticResultType(TypeProxy<?> a, TypeProxy<?> b)
     {
         var r1 = a.getRawType();
         var r2 = b.getRawType();
         var isInt1 = r1 == byte.class || r1 == short.class || r1 == int.class;
         var isInt2 = r2 == byte.class || r2 == short.class || r2 == int.class;
         if (isInt1 && isInt2)
-            return TypeToken.of(int.class);
+            return TypeProxy.of(int.class);
         if (r1 == long.class && isInt2 || r2 == long.class && isInt1)
-            return TypeToken.of(long.class);
+            return TypeProxy.of(long.class);
         if ((r1 == float.class && (r2 == float.class || isInt2)) || (r2 == float.class && isInt1))
-            return TypeToken.of(float.class);
+            return TypeProxy.of(float.class);
         if ((r1 == double.class && (r2 == double.class || r2 == float.class || isInt2)) || (r2 == double.class && (r1 == float.class || isInt1)))
-            return TypeToken.of(double.class);
+            return TypeProxy.of(double.class);
         return null;
     }
 

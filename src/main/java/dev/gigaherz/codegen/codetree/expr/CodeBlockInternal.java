@@ -1,6 +1,5 @@
 package dev.gigaherz.codegen.codetree.expr;
 
-import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.api.codetree.info.FieldInfo;
 import dev.gigaherz.codegen.api.codetree.info.MethodInfo;
 import dev.gigaherz.codegen.codetree.CompileTerminationMode;
@@ -30,8 +29,6 @@ public interface CodeBlockInternal<B, M> extends CodeBlock<B, M>
     void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult);
 
     CompileTerminationMode compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, @Nullable Label jumpEnd);
-
-    void pushStack(TypeToken<?> returnType);
 
     void pushStack(TypeProxy<?> returnType);
 

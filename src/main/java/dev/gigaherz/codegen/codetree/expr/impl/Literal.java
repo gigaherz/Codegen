@@ -1,8 +1,8 @@
 package dev.gigaherz.codegen.codetree.expr.impl;
 
-import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.codetree.expr.BooleanExpression;
 import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
+import dev.gigaherz.codegen.type.TypeProxy;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -14,9 +14,9 @@ import java.util.function.ToIntFunction;
 public abstract class Literal<T, B> extends ValueExpressionImpl<T,B>
 {
     protected final T value;
-    protected final TypeToken<T> valueType;
+    protected final TypeProxy<T> valueType;
 
-    public Literal(CodeBlockInternal<B, ?> cb, T value, TypeToken<T> valueType)
+    public Literal(CodeBlockInternal<B, ?> cb, T value, TypeProxy<T> valueType)
     {
         super(cb);
         this.value = value;
@@ -24,20 +24,20 @@ public abstract class Literal<T, B> extends ValueExpressionImpl<T,B>
     }
 
     @Override
-    public TypeToken<T> effectiveType()
+    public TypeProxy<T> effectiveType()
     {
         return valueType;
     }
 
     public static class Number<T extends java.lang.Number, B> extends Literal<T, B>
     {
-        public Number(CodeBlockInternal<B, ?> cb, T value, TypeToken<T> valueType)
+        public Number(CodeBlockInternal<B, ?> cb, T value, TypeProxy<T> valueType)
         {
             super(cb, value, valueType);
         }
 
         @Override
-        public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult, TypeToken<?> returnInsnType)
+        public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult, TypeProxy<?> returnInsnType)
         {
             var raw = valueType.getRawType();
             if (raw == byte.class ||raw == short.class ||raw == int.class)
@@ -118,11 +118,11 @@ public abstract class Literal<T, B> extends ValueExpressionImpl<T,B>
     {
         public String(CodeBlockInternal<B, ?> cb, java.lang.String value)
         {
-            super(cb, value, TypeToken.of(java.lang.String.class));
+            super(cb, value, TypeProxy.of(java.lang.String.class));
         }
 
         @Override
-        public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult, TypeToken<?> returnInsnType)
+        public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult, TypeProxy<?> returnInsnType)
         {
             throw new IllegalStateException("TODO -- NOT IMPLEMENTED");
         }
@@ -133,11 +133,11 @@ public abstract class Literal<T, B> extends ValueExpressionImpl<T,B>
 
         public Bool(CodeBlockInternal<B, ?> cb, Boolean value)
         {
-            super(cb, value, TypeToken.of(boolean.class));
+            super(cb, value, TypeProxy.of(boolean.class));
         }
 
         @Override
-        public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult, TypeToken<?> returnInsnType)
+        public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult, TypeProxy<?> returnInsnType)
         {
             throw new IllegalStateException("TODO -- NOT IMPLEMENTED");
         }

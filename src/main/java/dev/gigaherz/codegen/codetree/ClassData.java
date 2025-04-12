@@ -2,7 +2,6 @@ package dev.gigaherz.codegen.codetree;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
-import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.api.codetree.info.ClassInfo;
 import dev.gigaherz.codegen.api.codetree.info.FieldInfo;
 import dev.gigaherz.codegen.api.codetree.info.MethodInfo;
@@ -17,11 +16,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@SuppressWarnings("UnstableApiUsage")
 public class ClassData<T> implements ClassInfo<T>
 {
-    public final TypeToken<? super T> superClass;
-    public final TypeToken<?> thisType;
+    public final TypeProxy<? super T> superClass;
+    public final TypeProxy<?> thisType;
 
     public final List<MethodInfo<Void>> constructors = Lists.newArrayList();
     public final List<MethodInfo<?>> methods = Lists.newArrayList();
@@ -30,14 +28,14 @@ public class ClassData<T> implements ClassInfo<T>
     private ClassData<? super T> superClassInfo;
 
 
-    private ClassData(TypeToken<? super T> superClass, TypeToken<?> thisType)
+    private ClassData(TypeProxy<? super T> superClass, TypeProxy<?> thisType)
     {
         this.superClass = superClass;
         this.thisType = thisType;
     }
 
     @Override
-    public TypeToken<? super T> superClass()
+    public TypeProxy<? super T> superClass()
     {
         return this.superClass;
     }
@@ -46,7 +44,7 @@ public class ClassData<T> implements ClassInfo<T>
     @Override
     public TypeProxy<T> thisType()
     {
-        return (TypeProxy<T>) TypeProxy.of(this.thisType);
+        return (TypeProxy<T>) this.thisType;
     }
 
     @Override
@@ -99,48 +97,34 @@ public class ClassData<T> implements ClassInfo<T>
 
     private static final Map<Class<?>, ClassData<?>> classInfoCache = new IdentityHashMap<>();
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    public static <C> ClassData<? super C> getSuperClassInfo(TypeToken<C> cls)
-    {
-        Class rawType = cls.getRawType();
-        TypeToken<? super C> of = TypeToken.of(rawType);
-        return (ClassData<? super C>) getSuperClassInfo(rawType, of);
-    }
-
     public static <C> ClassData<? super C> getSuperClassInfo(Class<C> cls)
     {
-        return getClassInfo(cls, TypeToken.of(cls));
+        return getClassInfo(cls, TypeProxy.of(cls));
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    public static <C> ClassData<? super C> getSuperClassInfo(Class<C> cls, TypeToken<C> clsToken)
+    public static <C> ClassData<? super C> getSuperClassInfo(TypeProxy<C> cls)
     {
-        Class superClass = cls.getSuperclass();
-        TypeToken<? super C> superToken = clsToken.getSupertype(superClass);
-        return getClassInfo(superClass, superToken);
+        return (ClassData<? super C>) getSuperClassInfo(cls.getSuperclass());
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    public static <C> ClassData<C> getClassInfo(TypeToken<C> cls)
+    public static <C> ClassData<C> getClassInfo(TypeProxy<C> cls)
     {
-        Class rawType = cls.getRawType();
-        TypeToken<? super C> of = TypeToken.of(rawType);
-        return getClassInfo(rawType, of);
+        var rawType = java.util.Objects.requireNonNull(cls.getRawType());
+        return getClassInfo(rawType, cls);
     }
 
     public static <C> ClassData<C> getClassInfo(Class<C> cls)
     {
-        return getClassInfo(cls, TypeToken.of(cls));
+        return getClassInfo(cls, TypeProxy.of(cls));
     }
 
-    public static <C> ClassData<C> getClassInfo(Class<C> cls, TypeToken<C> clsToken)
+    public static <C> ClassData<C> getClassInfo(Class<? super C> cls, TypeProxy<C> clsToken)
     {
-        Class<? super C> superClass = cls.getSuperclass();
-        TypeToken<? super C> superToken = superClass == null ? null : clsToken.getSupertype(superClass);
+        TypeProxy<? super C> superToken = clsToken.getSuperclass();
         ClassData<C> ci = new ClassData<>(superToken, clsToken);
         for (Constructor<?> cnt : cls.getDeclaredConstructors())
         {
-            var mi = new MethodData<>(ci, "<init>", TypeToken.of(void.class), cnt.getModifiers());
+            var mi = new MethodData<>(ci, "<init>", TypeProxy.of(void.class), cnt.getModifiers());
             for (Parameter p : cnt.getParameters())
             {
                 ParamData<?> pi = new ParamData<>();
@@ -152,7 +136,7 @@ public class ClassData<T> implements ClassInfo<T>
         }
         for (Method m : cls.getDeclaredMethods())
         {
-            var mi = new MethodData<>(ci, m.getName(), TypeToken.of(m.getReturnType()), m.getModifiers());
+            var mi = new MethodData<>(ci, m.getName(), TypeProxy.of(m.getReturnType()), m.getModifiers());
             for (Parameter p : m.getParameters())
             {
                 ParamData<?> pi = new ParamData<>();
@@ -164,7 +148,7 @@ public class ClassData<T> implements ClassInfo<T>
         }
         for (Field f : cls.getDeclaredFields())
         {
-            FieldData<?> fi = new FieldData<>(ci, f.getName(), TypeToken.of(f.getType()), f.getModifiers());
+            FieldData<?> fi = new FieldData<>(ci, f.getName(), TypeProxy.of(f.getType()), f.getModifiers());
             ci.fields.add(fi);
         }
         return ci;

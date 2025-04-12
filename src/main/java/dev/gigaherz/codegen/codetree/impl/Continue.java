@@ -2,7 +2,6 @@ package dev.gigaherz.codegen.codetree.impl;
 
 import dev.gigaherz.codegen.codetree.CompileTerminationMode;
 import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
-import dev.gigaherz.codegen.codetree.expr.ValueExpression;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;

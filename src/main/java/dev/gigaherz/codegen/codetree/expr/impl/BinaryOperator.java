@@ -1,8 +1,8 @@
 package dev.gigaherz.codegen.codetree.expr.impl;
 
-import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
 import dev.gigaherz.codegen.codetree.expr.ValueExpression;
+import dev.gigaherz.codegen.type.TypeProxy;
 import org.objectweb.asm.MethodVisitor;
 
 import java.util.function.ToIntFunction;
@@ -13,9 +13,9 @@ public class BinaryOperator<T, B> extends ValueExpressionImpl<T, B>
     private final int opcode;
     private final ValueExpression<?, B> first;
     private final ValueExpression<?, B> second;
-    private final TypeToken<T> resultType;
+    private final TypeProxy<T> resultType;
 
-    public BinaryOperator(CodeBlockInternal<B, ?> cb, int opcode, ValueExpression<?, B> first, ValueExpression<T, B> second, TypeToken<T> resultType)
+    public BinaryOperator(CodeBlockInternal<B, ?> cb, int opcode, ValueExpression<?, B> first, ValueExpression<T, B> second, TypeProxy<T> resultType)
     {
         super(cb);
         this.opcode = opcode;
@@ -25,13 +25,13 @@ public class BinaryOperator<T, B> extends ValueExpressionImpl<T, B>
     }
 
     @Override
-    public TypeToken<T> effectiveType()
+    public TypeProxy<T> effectiveType()
     {
         return resultType;
     }
 
     @Override
-    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult, TypeToken<?> returnInsnType)
+    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult, TypeProxy<?> returnInsnType)
     {
         cb.beforeExpressionCompile();
 

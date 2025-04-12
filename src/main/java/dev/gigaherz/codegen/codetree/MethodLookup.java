@@ -1,11 +1,11 @@
 package dev.gigaherz.codegen.codetree;
 
 import com.google.common.collect.Lists;
-import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.api.codetree.info.ClassInfo;
 import dev.gigaherz.codegen.api.codetree.info.MethodInfo;
 import dev.gigaherz.codegen.api.codetree.info.ParamInfo;
 import dev.gigaherz.codegen.codetree.impl.MethodImplementation;
+import dev.gigaherz.codegen.type.TypeProxy;
 
 import java.util.List;
 
@@ -14,10 +14,10 @@ public class MethodLookup<R>
 {
     private final ClassInfo<R> owner;
     private final String name;
-    private final List<TypeToken<?>> params = Lists.newArrayList();
+    private final List<TypeProxy<?>> params = Lists.newArrayList();
     private boolean exact = false;
 
-    public MethodLookup(TypeToken<R> ownerType, String name)
+    public MethodLookup(TypeProxy<R> ownerType, String name)
     {
         this.owner = ClassData.getClassInfo(ownerType);
         this.name = name;
@@ -37,11 +37,11 @@ public class MethodLookup<R>
 
     public MethodLookup<R> withParam(Class<?> cls)
     {
-        params.add(TypeToken.of(cls));
+        params.add(TypeProxy.of(cls));
         return this;
     }
 
-    public MethodLookup<R> withParam(TypeToken<?> cls)
+    public MethodLookup<R> withParam(TypeProxy<?> cls)
     {
         params.add(cls);
         return this;
@@ -66,7 +66,7 @@ public class MethodLookup<R>
             int distance = 0;
             for (int i = 0; i < params.size(); i++)
             {
-                var rt = params.get(i).paramType().actualType();
+                var rt = params.get(i).paramType();
                 var rs = MethodImplementation.applyAutomaticCasting(rt, this.params.get(i));
 
                 if (!rt.equals(rs))

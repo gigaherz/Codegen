@@ -4,7 +4,6 @@ import dev.gigaherz.codegen.api.codetree.info.ClassInfo;
 import dev.gigaherz.codegen.api.codetree.info.FieldInfo;
 import dev.gigaherz.codegen.codetree.ClassData;
 import dev.gigaherz.codegen.codetree.CompileTerminationMode;
-import dev.gigaherz.codegen.type.TypeProxy;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -44,8 +43,8 @@ public class FieldLoad extends InstructionSource
     public static void compile(FieldInfo<?> fieldInfo, MethodVisitor mv)
     {
         if ((fieldInfo.modifiers() & Opcodes.ACC_STATIC) == 0)
-            mv.visitFieldInsn(Opcodes.GETFIELD, fieldInfo.owner().thisType().getInternalName(), fieldInfo.name(), TypeProxy.getTypeDescriptor(fieldInfo.type()));
+            mv.visitFieldInsn(Opcodes.GETFIELD, fieldInfo.owner().thisType().getInternalName(), fieldInfo.name(), fieldInfo.type().getDescriptor());
         else
-            mv.visitFieldInsn(Opcodes.GETSTATIC, fieldInfo.owner().thisType().getInternalName(), fieldInfo.name(), TypeProxy.getTypeDescriptor(fieldInfo.type()));
+            mv.visitFieldInsn(Opcodes.GETSTATIC, fieldInfo.owner().thisType().getInternalName(), fieldInfo.name(), fieldInfo.type().getDescriptor());
     }
 }

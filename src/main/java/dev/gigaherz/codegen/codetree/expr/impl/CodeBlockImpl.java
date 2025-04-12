@@ -1,7 +1,6 @@
 package dev.gigaherz.codegen.codetree.expr.impl;
 
 import com.google.common.collect.Lists;
-import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.api.FieldToken;
 import dev.gigaherz.codegen.api.VarToken;
 import dev.gigaherz.codegen.api.codetree.info.FieldInfo;
@@ -51,9 +50,9 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
 
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public TypeToken<B> returnType()
+    public TypeProxy<B> returnType()
     {
-        return (TypeToken) returnType;
+        return (TypeProxy) returnType;
     }
 
     public CompileTerminationMode compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, @Nullable Label jumpEnd)
@@ -123,7 +122,7 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
     }
 
     @Override
-    public CodeBlock<B, M> local(String name, TypeToken<?> varType)
+    public CodeBlock<B, M> local(String name, TypeProxy<?> varType)
     {
         LocalVariable<?> local = defineLocal(name, varType);
         locals.put(name, local);
@@ -131,7 +130,7 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
     }
 
     @Override
-    public CodeBlock<B, M> local(String name, TypeToken<?> varType, ValueExpression<?, B> initializer)
+    public CodeBlock<B, M> local(String name, TypeProxy<?> varType, ValueExpression<?, B> initializer)
     {
         LocalVariable<?> local = defineLocal(name, varType);
         locals.put(name, local);
@@ -139,16 +138,11 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
         return this;
     }
 
-    private <T> LocalVariable<T> defineLocal(String name, TypeToken<T> varType)
+    private <T> LocalVariable<T> defineLocal(String name, TypeProxy<T> varType)
     {
         if (locals.containsKey(name))
             throw new IllegalStateException("A local with name '" + name + "' has already been declared in this scope.");
-        return owner.defineLocal(name, TypeProxy.of(varType));
-    }
-
-    public void pushStack(TypeToken<?> type)
-    {
-        owner.pushStack(type);
+        return owner.defineLocal(name, varType);
     }
 
     public void pushStack(TypeProxy<?> type)
@@ -199,15 +193,15 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
     @Override
     public void returnVoid()
     {
-        instructions.add(new Return(this, TypeToken.of(void.class)));
+        instructions.add(new Return(this, TypeProxy.of(void.class)));
     }
 
     public void returnInt()
     {
-        instructions.add(new Return(this, TypeToken.of(int.class)));
+        instructions.add(new Return(this, TypeProxy.of(int.class)));
     }
 
-    public void returnType(TypeToken<?> type)
+    public void returnType(TypeProxy<?> type)
     {
         instructions.add(new Return(this, type));
     }
@@ -331,7 +325,7 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
     }
 
     @Override
-    public ValueExpression<?, B> staticField(TypeToken<?> type, String fieldName)
+    public ValueExpression<?, B> staticField(TypeProxy<?> type, String fieldName)
     {
         throw new IllegalStateException("TODO - Not implemented");
     }
@@ -408,7 +402,7 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
     }
 
     @Override
-    public <R> ValueExpression<R, B> staticCall(TypeToken<?> classToken, String methodName, List<ValueExpression<?, B>> values)
+    public <R> ValueExpression<R, B> staticCall(TypeProxy<?> classToken, String methodName, List<ValueExpression<?, B>> values)
     {
         throw new IllegalStateException("TODO - Not implemented");
     }
@@ -432,7 +426,7 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
     }
 
     @Override
-    public <R, T> ValueExpression<R, B> staticCall(TypeToken<T> classToken, String methodName, Function<MethodLookup<T>, MethodLookup<T>> methodLookup, List<ValueExpression<?, B>> values)
+    public <R, T> ValueExpression<R, B> staticCall(TypeProxy<T> classToken, String methodName, Function<MethodLookup<T>, MethodLookup<T>> methodLookup, List<ValueExpression<?, B>> values)
     {
         var ml = new MethodLookup<>(classToken, methodName);
         ml = methodLookup.apply(ml);
@@ -451,8 +445,8 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
         {
             var param = params.get(i);
             var val = lValues.get(i);
-            var lVal = owner.applyAutomaticCasting(param.paramType().actualType(), val);
-            if (!param.paramType().actualType().isSupertypeOf(lVal.effectiveType()))
+            var lVal = owner.applyAutomaticCasting(param.paramType(), val);
+            if (!param.paramType().isSupertypeOf(lVal.effectiveType()))
                 throw new IllegalStateException("Param " + i + " cannot be converted from " + lVal.effectiveType() + " to " + param.paramType().actualType());
             if (lVal != val)
                 lValues.set(i, lVal);
@@ -681,7 +675,7 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
     /** @noinspection unchecked, rawtypes */
     private ValueExpression<?, B> binaryArithmeticOperator(ValueExpression<?, B> a, ValueExpression<?, B> b, int intOp, int longOp, int floatOp, int doubleOp, String opname)
     {
-        TypeToken<?> resultType = owner.computeArithmeticResultType(a.effectiveType(), b.effectiveType());
+        TypeProxy<?> resultType = owner.computeArithmeticResultType(a.effectiveType(), b.effectiveType());
         if (resultType == null)
             throw new IllegalStateException("Cannot find result type for an arithmetic operation between " + a.effectiveType() + " and " + b.effectiveType());
         var a1 = owner.applyAutomaticCasting(resultType, a);
@@ -701,7 +695,7 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
     /** @noinspection unchecked, rawtypes */
     private ValueExpression<?, B> binaryBitwiseOperator(ValueExpression<?, B> a, ValueExpression<?, B> b, int intOp, int longOp, String opname)
     {
-        TypeToken<?> resultType = owner.computeArithmeticResultType(a.effectiveType(), b.effectiveType());
+        TypeProxy<?> resultType = owner.computeArithmeticResultType(a.effectiveType(), b.effectiveType());
         if (resultType == null)
             throw new IllegalStateException("Cannot find result type for an arithmetic operation between " + a.effectiveType() + " and " + b.effectiveType());
         var a1 = owner.applyAutomaticCasting(resultType, a);
@@ -741,12 +735,12 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
     }
 
     public BooleanExpression<B> literal(boolean val) { return new Literal.Bool<>(this, val); }
-    public ValueExpression<Byte, B> literal(byte val) { return new Literal.Number<>(this, val, TypeToken.of(byte.class)); }
-    public ValueExpression<Short, B> literal(short val) { return new Literal.Number<>(this, val, TypeToken.of(short.class)); }
-    public ValueExpression<Integer, B> literal(int val) { return new Literal.Number<>(this, val, TypeToken.of(int.class)); }
-    public ValueExpression<Long, B> literal(long val) { return new Literal.Number<>(this, val, TypeToken.of(long.class)); }
-    public ValueExpression<Float, B> literal(float val) { return new Literal.Number<>(this, val, TypeToken.of(float.class)); }
-    public ValueExpression<Double, B> literal(double val) { return new Literal.Number<>(this, val, TypeToken.of(double.class)); }
+    public ValueExpression<Byte, B> literal(byte val) { return new Literal.Number<>(this, val, TypeProxy.of(byte.class)); }
+    public ValueExpression<Short, B> literal(short val) { return new Literal.Number<>(this, val, TypeProxy.of(short.class)); }
+    public ValueExpression<Integer, B> literal(int val) { return new Literal.Number<>(this, val, TypeProxy.of(int.class)); }
+    public ValueExpression<Long, B> literal(long val) { return new Literal.Number<>(this, val, TypeProxy.of(long.class)); }
+    public ValueExpression<Float, B> literal(float val) { return new Literal.Number<>(this, val, TypeProxy.of(float.class)); }
+    public ValueExpression<Double, B> literal(double val) { return new Literal.Number<>(this, val, TypeProxy.of(double.class)); }
     public ValueExpression<String, B> literal(String val) { return new Literal.String<>(this, val); }
 
     public <X> CodeBlockInternal<X, M> childBlock(Label breakLabel, Label continueLabel)
@@ -770,7 +764,7 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
     }
 
     @Override
-    public <V, S extends V> CodeBlock<B, M> forEach(String localName, TypeToken<V> varType, ValueExpression<S, B> collection, Consumer<CodeBlock<B, M>> body)
+    public <V, S extends V> CodeBlock<B, M> forEach(String localName, TypeProxy<V> varType, ValueExpression<S, B> collection, Consumer<CodeBlock<B, M>> body)
     {
         throw new IllegalStateException("TODO - Not implemented");
     }

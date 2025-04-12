@@ -1,6 +1,5 @@
 package dev.gigaherz.codegen;
 
-import dev.gigaherz.codegen.codetree.impl.ThisClass;
 import dev.gigaherz.codegen.tests.Test;
 import dev.gigaherz.codegen.tests.Vector3I;
 

@@ -1,13 +1,13 @@
 package dev.gigaherz.codegen.api;
 
-import com.google.common.reflect.TypeToken;
+import dev.gigaherz.codegen.type.TypeProxy;
 
 public interface DefineClassTyped<C> extends DefineClass<C>
 {
-    DefineClass<C> implementing(TypeToken<?> interfaceClass);
+    DefineClass<C> implementing(TypeProxy<?> interfaceClass);
 
     default DefineClass<C> implementing(Class<?> baseClass)
     {
-        return implementing(TypeToken.of(baseClass));
+        return implementing(TypeProxy.of(baseClass));
     }
 }

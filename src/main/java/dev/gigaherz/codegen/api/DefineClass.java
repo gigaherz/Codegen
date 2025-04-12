@@ -1,10 +1,10 @@
 package dev.gigaherz.codegen.api;
 
-import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.api.codetree.info.ClassInfo;
 import dev.gigaherz.codegen.api.codetree.info.MethodInfo;
 import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
 import dev.gigaherz.codegen.codetree.impl.ThisClass;
+import dev.gigaherz.codegen.type.TypeProxy;
 
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -12,11 +12,11 @@ import java.util.function.Predicate;
 @SuppressWarnings("UnstableApiUsage")
 public interface DefineClass<C> extends Finishable<ClassDef<C>>
 {
-    <F> DefineField<C, F> field(String name, TypeToken<F> fieldType);
+    <F> DefineField<C, F> field(String name, TypeProxy<F> fieldType);
 
     default <F> DefineField<C, F> field(String name, Class<F> fieldType)
     {
-        return field(name, TypeToken.of(fieldType));
+        return field(name, TypeProxy.of(fieldType));
     }
 
     default <F> DefineField<C, F> field(FieldToken<F> token)
@@ -26,11 +26,11 @@ public interface DefineClass<C> extends Finishable<ClassDef<C>>
 
     DefineMethod<C, C> method(String name, ThisClass thisClass);
 
-    <R> DefineMethod<C, R> method(String name, TypeToken<R> returnType);
+    <R> DefineMethod<C, R> method(String name, TypeProxy<R> returnType);
 
     default <F> DefineMethod<C, F> method(String name, Class<F> fieldType)
     {
-        return method(name, TypeToken.of(fieldType));
+        return method(name, TypeProxy.of(fieldType));
     }
 
     DefineMethod<C, Void> constructor();

@@ -1,6 +1,6 @@
 package dev.gigaherz.codegen.codetree.expr;
 
-import com.google.common.reflect.TypeToken;
+import dev.gigaherz.codegen.type.TypeProxy;
 import org.objectweb.asm.MethodVisitor;
 
 import java.util.function.ToIntFunction;
@@ -8,7 +8,7 @@ import java.util.function.ToIntFunction;
 @SuppressWarnings("UnstableApiUsage")
 public interface LRef<T>
 {
-    TypeToken<T> targetType();
+    TypeProxy<T> targetType();
 
     void compileBefore(ToIntFunction<Object> defineConstant, MethodVisitor mv);
 

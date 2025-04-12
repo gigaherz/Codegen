@@ -1,18 +1,18 @@
 package dev.gigaherz.codegen.codetree;
 
-import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.api.codetree.info.ClassInfo;
 import dev.gigaherz.codegen.api.codetree.info.FieldInfo;
+import dev.gigaherz.codegen.type.TypeProxy;
 
 @SuppressWarnings("UnstableApiUsage")
 public class FieldData<T> implements FieldInfo<T>
 {
     public String name;
     public int modifiers;
-    public TypeToken<?> type;
+    public TypeProxy<?> type;
     public ClassInfo<?> owner;
 
-    public FieldData(ClassInfo<?> owner, String name, TypeToken<?> type, int modifiers)
+    public FieldData(ClassInfo<?> owner, String name, TypeProxy<?> type, int modifiers)
     {
         this.owner = owner;
         this.name = name;
@@ -34,9 +34,9 @@ public class FieldData<T> implements FieldInfo<T>
 
     @SuppressWarnings("unchecked")
     @Override
-    public TypeToken<T> type()
+    public TypeProxy<T> type()
     {
-        return (TypeToken<T>) this.type;
+        return (TypeProxy<T>) this.type;
     }
 
     @Override

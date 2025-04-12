@@ -1,6 +1,6 @@
 package dev.gigaherz.codegen.api.codetree.info;
 
-import com.google.common.reflect.TypeToken;
+import dev.gigaherz.codegen.type.TypeProxy;
 
 @SuppressWarnings("UnstableApiUsage")
 public interface FieldInfo<T>
@@ -9,7 +9,7 @@ public interface FieldInfo<T>
 
     int modifiers();
 
-    TypeToken<T> type();
+    TypeProxy<T> type();
 
     ClassInfo<?> owner();
 }

@@ -1,10 +1,10 @@
 package dev.gigaherz.codegen.codetree.expr.impl;
 
-import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.api.codetree.info.FieldInfo;
 import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
 import dev.gigaherz.codegen.codetree.expr.ValueExpression;
 import dev.gigaherz.codegen.codetree.impl.FieldStore;
+import dev.gigaherz.codegen.type.TypeProxy;
 import org.objectweb.asm.MethodVisitor;
 
 import java.util.function.ToIntFunction;
@@ -23,7 +23,7 @@ public class FieldRef<T, B> extends LRefImpl<T, B>
     }
 
     @Override
-    public TypeToken<T> targetType()
+    public TypeProxy<T> targetType()
     {
         return field.type();
     }

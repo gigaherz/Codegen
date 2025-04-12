@@ -1,10 +1,10 @@
 package dev.gigaherz.codegen.codetree;
 
 import com.google.common.collect.Lists;
-import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.api.codetree.info.ClassInfo;
 import dev.gigaherz.codegen.api.codetree.info.MethodInfo;
 import dev.gigaherz.codegen.api.codetree.info.ParamInfo;
+import dev.gigaherz.codegen.type.TypeProxy;
 
 import java.util.List;
 
@@ -12,12 +12,12 @@ import java.util.List;
 public class MethodData<R> implements MethodInfo<R>
 {
     public List<ParamInfo<?>> params = Lists.newArrayList();
-    public TypeToken<R> returnType;
+    public TypeProxy<R> returnType;
     public ClassData<?> owner;
     public String name;
     public int modifiers;
 
-    public MethodData(ClassData<?> owner, String name, TypeToken<R> returnType, int modifiers)
+    public MethodData(ClassData<?> owner, String name, TypeProxy<R> returnType, int modifiers)
     {
         this.owner = owner;
         this.name = name;
@@ -32,7 +32,7 @@ public class MethodData<R> implements MethodInfo<R>
     }
 
     @Override
-    public TypeToken<R> returnType()
+    public TypeProxy<R> returnType()
     {
         return this.returnType;
     }

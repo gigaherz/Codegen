@@ -1,13 +1,13 @@
 package dev.gigaherz.codegen.codetree.expr.impl;
 
-import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.codetree.expr.BooleanExpression;
 import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
+import dev.gigaherz.codegen.type.TypeProxy;
 
 @SuppressWarnings("UnstableApiUsage")
 public abstract class BooleanExpressionImpl<B> extends ValueExpressionImpl<Boolean, B> implements BooleanExpression<B>
 {
-    public static final TypeToken<Boolean> BOOLEAN_TYPE_TOKEN = TypeToken.of(boolean.class);
+    public static final TypeProxy<Boolean> BOOLEAN_TYPE_TOKEN = TypeProxy.of(boolean.class);
 
     public BooleanExpressionImpl(CodeBlockInternal<B, ?> cb)
     {
@@ -15,7 +15,7 @@ public abstract class BooleanExpressionImpl<B> extends ValueExpressionImpl<Boole
     }
 
     @Override
-    public TypeToken<Boolean> effectiveType()
+    public TypeProxy<Boolean> effectiveType()
     {
         return BOOLEAN_TYPE_TOKEN;
     }

@@ -1,9 +1,9 @@
 package dev.gigaherz.codegen.codetree.expr.impl;
 
-import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.codetree.expr.BooleanExpression;
 import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
 import dev.gigaherz.codegen.codetree.expr.ValueExpression;
+import dev.gigaherz.codegen.type.TypeProxy;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -15,9 +15,9 @@ import java.util.function.ToIntFunction;
 public class CastExpression<T, B> extends ValueExpressionImpl<T, B>
 {
     protected final ValueExpression<?, B> expression;
-    protected final TypeToken<T> targetClass;
+    protected final TypeProxy<T> targetClass;
 
-    public CastExpression(CodeBlockInternal<B, ?> cb, ValueExpression<?, B> expression, TypeToken<T> targetClass)
+    public CastExpression(CodeBlockInternal<B, ?> cb, ValueExpression<?, B> expression, TypeProxy<T> targetClass)
     {
         super(cb);
         this.expression = expression;
@@ -25,13 +25,13 @@ public class CastExpression<T, B> extends ValueExpressionImpl<T, B>
     }
 
     @Override
-    public TypeToken<T> effectiveType()
+    public TypeProxy<T> effectiveType()
     {
         return targetClass;
     }
 
     @Override
-    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult, TypeToken<?> returnInsnType)
+    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult, TypeProxy<?> returnInsnType)
     {
         cb.beforeExpressionCompile();
         if (expression.effectiveType().equals(targetClass))
@@ -53,7 +53,7 @@ public class CastExpression<T, B> extends ValueExpressionImpl<T, B>
     {
         public Bool(CodeBlockInternal<B, ?> cb, ValueExpression<?, B> expression)
         {
-            super(cb, expression, TypeToken.of(boolean.class));
+            super(cb, expression, TypeProxy.of(boolean.class));
         }
 
         @Override

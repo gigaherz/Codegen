@@ -1,9 +1,9 @@
 package dev.gigaherz.codegen.codetree.expr.impl;
 
-import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
 import dev.gigaherz.codegen.codetree.impl.LocalStore;
 import dev.gigaherz.codegen.codetree.impl.LocalVariable;
+import dev.gigaherz.codegen.type.TypeProxy;
 import org.objectweb.asm.MethodVisitor;
 
 import java.util.function.ToIntFunction;
@@ -21,9 +21,9 @@ public class VarRef<T, B> extends LRefImpl<T, B>
     }
 
     @Override
-    public TypeToken<T> targetType()
+    public TypeProxy<T> targetType()
     {
-        return localVariable.variableType.actualType();
+        return localVariable.variableType;
     }
 
     @Override

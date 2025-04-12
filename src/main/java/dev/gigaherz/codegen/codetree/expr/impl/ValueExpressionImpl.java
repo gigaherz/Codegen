@@ -1,6 +1,5 @@
 package dev.gigaherz.codegen.codetree.expr.impl;
 
-import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.api.FieldToken;
 import dev.gigaherz.codegen.codetree.MethodLookup;
 import dev.gigaherz.codegen.codetree.expr.BooleanExpression;
@@ -21,13 +20,7 @@ public abstract class ValueExpressionImpl<T, B> extends ExprBase<B> implements V
     }
 
     @Override
-    public TypeProxy<T> proxyType()
-    {
-        return TypeProxy.of(effectiveType());
-    }
-
-    @Override
-    public <T1> ValueExpression<T1, B> cast(TypeToken<T1> targetClass)
+    public <T1> ValueExpression<T1, B> cast(TypeProxy<T1> targetClass)
     {
         return new CastExpression<>(cb, this, targetClass);
     }
@@ -41,19 +34,19 @@ public abstract class ValueExpressionImpl<T, B> extends ExprBase<B> implements V
     @Override
     public LRef<?> fieldRef(String fieldName)
     {
-        return cb.fieldRef(this, proxyType().classInfo().getField(fieldName));
+        return cb.fieldRef(this, effectiveType().classInfo().getField(fieldName));
     }
 
     @Override
     public <F> ValueExpression<F, B> field(String fieldName)
     {
-        return cb.field(this, proxyType().classInfo().getField(fieldName));
+        return cb.field(this, effectiveType().classInfo().getField(fieldName));
     }
 
     @Override
     public <F> ValueExpression<F, B> field(FieldToken<F> fieldToken)
     {
-        return cb.field(this, proxyType().classInfo().getField(fieldToken.name()));
+        return cb.field(this, effectiveType().classInfo().getField(fieldToken.name()));
     }
 
     @Override
@@ -71,7 +64,7 @@ public abstract class ValueExpressionImpl<T, B> extends ExprBase<B> implements V
     @Override
     public <R> ValueExpression<R, B> methodCall(String name, Function<MethodLookup<T>, MethodLookup<T>> lookup, List<ValueExpression<?, B>> values)
     {
-        var ml = new MethodLookup<>(proxyType().classInfo(), name);
+        var ml = new MethodLookup<>(effectiveType().classInfo(), name);
         ml = lookup.apply(ml);
         return cb.methodCall(this, ml.result(), values);
     }

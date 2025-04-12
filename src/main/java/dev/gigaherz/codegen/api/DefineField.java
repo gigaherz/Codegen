@@ -1,6 +1,5 @@
 package dev.gigaherz.codegen.api;
 
-import dev.gigaherz.codegen.codetree.expr.CodeBlock;
 import dev.gigaherz.codegen.codetree.expr.ExpressionBuilder;
 import dev.gigaherz.codegen.codetree.expr.ValueExpression;
 

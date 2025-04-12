@@ -99,6 +99,10 @@ public interface TypeProxy<T>
         return null;
     }
 
+    default boolean isDynamic() {
+        return false;
+    }
+
     boolean isPrimitive();
 
     boolean isArray();
@@ -110,22 +114,11 @@ public interface TypeProxy<T>
     @Nullable
     Class<? super T> getRawType();
 
-    @Nullable
-    static String getTypeSignature(TypeToken<?> type)
-    {
-        return TypeProxy.of(type).getSignature();
-    }
-
-    static String getTypeDescriptor(TypeToken<?> type)
-    {
-        return TypeProxy.of(type).getDescriptor();
-    }
-
     Constructor<T> getConstructor(Class<?>... parameterTypes) throws NoSuchMethodException, SecurityException;
 
-    <T> boolean isSupertypeOf(TypeToken<T> subclass);
+    <S> boolean isSupertypeOf(TypeProxy<S> subclass);
 
-    <T> boolean isSupertypeOf(TypeProxy<T> subclass);
+    TypeProxy<? super T> getSuperclass();
 
     @SuppressWarnings({"UnstableApiUsage"})
     class Token<T> implements TypeProxy<T>
@@ -166,7 +159,7 @@ public interface TypeProxy<T>
         @Override
         public ClassInfo<T> classInfo()
         {
-            return ClassData.getClassInfo(type);
+            return ClassData.getClassInfo(this);
         }
 
         @Override
@@ -213,15 +206,19 @@ public interface TypeProxy<T>
         }
 
         @Override
-        public <T1> boolean isSupertypeOf(TypeToken<T1> subclass)
-        {
-            return type.isSupertypeOf(subclass);
-        }
-
-        @Override
         public <T1> boolean isSupertypeOf(TypeProxy<T1> subclass)
         {
             return type.isSupertypeOf(subclass.actualType());
+        }
+
+        @Override
+        public TypeProxy<? super T> getSuperclass()
+        {
+            var superClass = type.getRawType().getSuperclass();
+            if (superClass == null)
+                return null;
+            //noinspection unchecked,rawtypes
+            return TypeProxy.of((TypeToken)type.getSupertype(superClass));
         }
     }
 }

@@ -1,15 +1,12 @@
 package dev.gigaherz.codegen.codetree.expr;
 
-import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.api.VarToken;
 import dev.gigaherz.codegen.codetree.MethodLookup;
-import dev.gigaherz.codegen.codetree.impl.ForBlock;
 import dev.gigaherz.codegen.codetree.impl.InstructionSource;
-import dev.gigaherz.codegen.codetree.impl.LocalVariable;
 import dev.gigaherz.codegen.codetree.impl.MethodImplementation;
+import dev.gigaherz.codegen.type.TypeProxy;
 
 import javax.annotation.Nullable;
-import javax.management.ValueExp;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -17,13 +14,13 @@ import java.util.function.Function;
 @SuppressWarnings("UnstableApiUsage")
 public interface CodeBlock<B, M> extends ExpressionBuilder<B, M>
 {
-    TypeToken<B> returnType();
+    TypeProxy<B> returnType();
 
     List<InstructionSource> instructions();
 
-    CodeBlock<B, M> local(String name, TypeToken<?> varType);
+    CodeBlock<B, M> local(String name, TypeProxy<?> varType);
 
-    CodeBlock<B, M> local(String name, TypeToken<?> varType, ValueExpression<?, B> initializer);
+    CodeBlock<B, M> local(String name, TypeProxy<?> varType, ValueExpression<?, B> initializer);
 
     default <T> CodeBlock<B, M> local(VarToken<T> varToken)
     {
@@ -32,12 +29,12 @@ public interface CodeBlock<B, M> extends ExpressionBuilder<B, M>
 
     default CodeBlock<B, M> local(String name, Class<?> varType)
     {
-        return local(name, TypeToken.of(varType));
+        return local(name, TypeProxy.of(varType));
     }
 
     default CodeBlock<B, M> local(String name, Class<?> varType, ValueExpression<?, B> initializer)
     {
-        return local(name, TypeToken.of(varType), initializer);
+        return local(name, TypeProxy.of(varType), initializer);
     }
 
     void returnVoid();
@@ -132,11 +129,11 @@ public interface CodeBlock<B, M> extends ExpressionBuilder<B, M>
     /** @noinspection unchecked*/
     <T> CodeBlock<B, M> forLoop(@Nullable Consumer<CodeBlock<T, M>> init, @Nullable BooleanExpression<?> condition, @Nullable Consumer<CodeBlock<T, M>> step, Consumer<CodeBlock<T, M>> body);
 
-    <V, S extends V> CodeBlock<B, M> forEach(String localName, TypeToken<V> varType, ValueExpression<S, B> collection, Consumer<CodeBlock<B, M>> body);
+    <V, S extends V> CodeBlock<B, M> forEach(String localName, TypeProxy<V> varType, ValueExpression<S, B> collection, Consumer<CodeBlock<B, M>> body);
 
     default <V, S extends V> CodeBlock<B, M> forEach(String localName, Class<V> varType, ValueExpression<S, B> collection, Consumer<CodeBlock<B, M>> body)
     {
-        return forEach(localName, TypeToken.of(varType), collection, body);
+        return forEach(localName, TypeProxy.of(varType), collection, body);
     }
 
     default <V, S extends V> CodeBlock<B, M> forEach(VarToken<V> varToken, ValueExpression<S, B> collection, Consumer<CodeBlock<B, M>> body)

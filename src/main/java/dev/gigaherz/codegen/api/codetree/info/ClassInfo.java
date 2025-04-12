@@ -1,6 +1,5 @@
 package dev.gigaherz.codegen.api.codetree.info;
 
-import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.type.TypeProxy;
 
 import java.util.List;
@@ -9,7 +8,7 @@ import java.util.Optional;
 @SuppressWarnings("UnstableApiUsage")
 public interface ClassInfo<T>
 {
-    TypeToken<? super T> superClass();
+    TypeProxy<? super T> superClass();
 
     TypeProxy<T> thisType();
 

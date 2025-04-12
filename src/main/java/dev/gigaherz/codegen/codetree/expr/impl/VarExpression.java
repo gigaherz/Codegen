@@ -1,6 +1,5 @@
 package dev.gigaherz.codegen.codetree.expr.impl;
 
-import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
 import dev.gigaherz.codegen.codetree.impl.LocalLoad;
 import dev.gigaherz.codegen.codetree.impl.LocalVariable;
@@ -21,19 +20,13 @@ public class VarExpression<T, B> extends ValueExpressionImpl<T, B>
     }
 
     @Override
-    public TypeToken<T> effectiveType()
-    {
-        return localVariable.variableType.actualType();
-    }
-
-    @Override
-    public TypeProxy<T> proxyType()
+    public TypeProxy<T> effectiveType()
     {
         return localVariable.variableType;
     }
 
     @Override
-    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult, TypeToken<?> returnInsnType)
+    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult, TypeProxy<?> returnInsnType)
     {
         cb.beforeExpressionCompile();
         if (needsResult)

@@ -1,8 +1,8 @@
 package dev.gigaherz.codegen.codetree.impl;
 
-import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.codetree.CompileTerminationMode;
 import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
+import dev.gigaherz.codegen.type.TypeProxy;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -12,10 +12,10 @@ import java.util.function.ToIntFunction;
 @SuppressWarnings("UnstableApiUsage")
 public class Return extends InstructionSource
 {
-    private final TypeToken<?> returnType;
+    private final TypeProxy<?> returnType;
     private final CodeBlockInternal<?, ?> cb;
 
-    public Return(CodeBlockInternal<?, ?> cb, TypeToken<?> returnType)
+    public Return(CodeBlockInternal<?, ?> cb, TypeProxy<?> returnType)
     {
         this.cb = cb;
         this.returnType = returnType;
@@ -31,7 +31,7 @@ public class Return extends InstructionSource
         return CompileTerminationMode.BREAK;
     }
 
-    public static void compileReturn(TypeToken<?> returnType, MethodVisitor mv)
+    public static void compileReturn(TypeProxy<?> returnType, MethodVisitor mv)
     {
         Class<?> rawType = returnType.getRawType();
         if (rawType == void.class)

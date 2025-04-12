@@ -1,11 +1,10 @@
 package dev.gigaherz.codegen.api;
 
-import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.api.codetree.info.ClassInfo;
 import dev.gigaherz.codegen.api.codetree.info.MethodInfo;
-import dev.gigaherz.codegen.codetree.expr.CodeBlock;
 import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
 import dev.gigaherz.codegen.codetree.impl.ThisClass;
+import dev.gigaherz.codegen.type.TypeProxy;
 
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -14,13 +13,13 @@ import java.util.function.Predicate;
 public interface FinishToClass<T> extends Finishable<ClassDef<T>>, DefineClass<T>
 {
     @Override
-    default <F> DefineField<T, F> field(String name, TypeToken<F> fieldType)
+    default <F> DefineField<T, F> field(String name, TypeProxy<F> fieldType)
     {
         return finish().field(name, fieldType);
     }
 
     @Override
-    default <F> DefineMethod<T, F> method(String name, TypeToken<F> returnType)
+    default <F> DefineMethod<T, F> method(String name, TypeProxy<F> returnType)
     {
         return finish().method(name, returnType);
     }

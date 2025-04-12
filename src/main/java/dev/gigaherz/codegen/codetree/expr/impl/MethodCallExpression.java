@@ -1,6 +1,5 @@
 package dev.gigaherz.codegen.codetree.expr.impl;
 
-import com.google.common.reflect.TypeToken;
 import dev.gigaherz.codegen.api.codetree.info.MethodInfo;
 import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
 import dev.gigaherz.codegen.codetree.expr.ValueExpression;
@@ -31,19 +30,13 @@ public class MethodCallExpression<R, B> extends ValueExpressionImpl<R, B>
     }
 
     @Override
-    public TypeProxy<R> proxyType()
+    public TypeProxy<R> effectiveType()
     {
         return method.returnType();
     }
 
     @Override
-    public TypeToken<R> effectiveType()
-    {
-        return method.returnType().actualType();
-    }
-
-    @Override
-    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult, TypeToken<?> returnInsnType)
+    public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult, TypeProxy<?> returnInsnType)
     {
         cb.beforeExpressionCompile();
         if (method.isStatic())

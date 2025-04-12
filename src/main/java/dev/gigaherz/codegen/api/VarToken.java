@@ -1,10 +1,10 @@
 package dev.gigaherz.codegen.api;
 
-import com.google.common.reflect.TypeToken;
+import dev.gigaherz.codegen.type.TypeProxy;
 
 @SuppressWarnings("UnstableApiUsage")
 public interface VarToken<T>
 {
     String name();
-    TypeToken<T> type();
+    TypeProxy<T> type();
 }
