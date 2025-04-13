@@ -27,8 +27,6 @@ public interface TypeProxy<T>
         return new Token<>(type);
     }
 
-    TypeToken<T> actualType();
-
     String getInternalName();
 
     String getName();
@@ -39,7 +37,7 @@ public interface TypeProxy<T>
 
     default String getDescriptor()
     {
-        var rt = getRawType();
+        var rt = getSafeRawType();
         if (isPrimitive())
         {
             if (rt == int.class)
@@ -120,24 +118,16 @@ public interface TypeProxy<T>
 
     TypeProxy<? super T> getSuperclass();
 
-    @SuppressWarnings({"UnstableApiUsage"})
-    class Token<T> implements TypeProxy<T>
+    Class<? super T> getSafeRawType();
+
+    default boolean isAssignableFrom(TypeProxy<?> typeProxy)
     {
-        private final TypeToken<T> type;
+        return typeProxy.isSupertypeOf(this);
+    }
 
-        private Token(TypeToken<T> type)
-        {
-            this.type = type;
-        }
-
-        @Override
-        public TypeToken<T> actualType()
-        {
-            if (type == null)
-                throw new IllegalStateException("Type has not been calculated yet.");
-            return this.type;
-        }
-
+    @SuppressWarnings({"UnstableApiUsage"})
+    record Token<T>(TypeToken<T> actualType) implements TypeProxy<T>
+    {
         @Override
         public String getInternalName()
         {
@@ -153,7 +143,7 @@ public interface TypeProxy<T>
         @Override
         public String getClassNameWithoutPackage()
         {
-            return type.getRawType().getTypeName();
+            return actualType.getRawType().getTypeName();
         }
 
         @Override
@@ -165,60 +155,90 @@ public interface TypeProxy<T>
         @Override
         public boolean isPrimitive()
         {
-            return type.isPrimitive();
+            return actualType.isPrimitive();
         }
 
         @Override
         public boolean isArray()
         {
-            return type.isArray();
+            return actualType.isArray();
         }
 
         @Override
         public boolean isInterface()
         {
-            return type.getRawType().isInterface();
+            return actualType.getRawType().isInterface();
         }
 
         @Override
         public boolean isVoid()
         {
-            return type.getRawType() == void.class;
+            return actualType.getRawType() == void.class;
         }
 
         @Override
         public Class<? super T> getRawType()
         {
-            return type.getRawType();
+            return actualType.getRawType();
         }
 
         @Override
         public String toString()
         {
-            return type.toString();
+            return actualType.toString();
         }
 
         @Override
         public Constructor<T> getConstructor(Class<?>... parameterTypes) throws NoSuchMethodException, SecurityException
         {
             //noinspection unchecked
-            return (Constructor<T>) type.getRawType().getConstructor(parameterTypes);
+            return (Constructor<T>) actualType.getRawType().getConstructor(parameterTypes);
         }
 
         @Override
         public <T1> boolean isSupertypeOf(TypeProxy<T1> subclass)
         {
-            return type.isSupertypeOf(subclass.actualType());
+            if (subclass instanceof Token(TypeToken type))
+                return actualType.isSupertypeOf(type);
+            return isSupertypeOf(subclass.getSuperclass());
         }
 
         @Override
         public TypeProxy<? super T> getSuperclass()
         {
-            var superClass = type.getRawType().getSuperclass();
+            var superClass = actualType.getRawType().getSuperclass();
             if (superClass == null)
                 return null;
             //noinspection unchecked,rawtypes
-            return TypeProxy.of((TypeToken)type.getSupertype(superClass));
+            return TypeProxy.of((TypeToken) actualType.getSupertype(superClass));
+        }
+
+        @Override
+        public Class<? super T> getSafeRawType()
+        {
+            return getRawType();
+        }
+
+        @Override
+        public boolean isAssignableFrom(TypeProxy<?> typeProxy)
+        {
+            return actualType.getRawType().isAssignableFrom(typeProxy.getRawType());
+        }
+
+        @Override
+        public boolean equals(Object obj)
+        {
+            if (this == obj) return true;
+            if (obj == null) return false;
+            //noinspection rawtypes
+            if (!(obj instanceof Token token)) return false;
+            return actualType.equals(token.actualType);
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return Objects.hash(actualType);
         }
     }
 }

@@ -9,7 +9,6 @@ import org.objectweb.asm.MethodVisitor;
 
 import java.util.function.ToIntFunction;
 
-@SuppressWarnings("UnstableApiUsage")
 public class ReturnWithValue extends InstructionSource
 {
     private final CodeBlock<?, ?> cb;

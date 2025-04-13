@@ -6,7 +6,6 @@ import org.objectweb.asm.MethodVisitor;
 
 import java.util.function.ToIntFunction;
 
-@SuppressWarnings("UnstableApiUsage")
 public class CodeBlockExpression<B, P> extends ValueExpressionImpl<B, P>
 {
     private final CodeBlockInternal<B, ?> thisBlock;

@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.ToIntFunction;
 
-@SuppressWarnings("UnstableApiUsage")
 public interface ValueExpression<T, B> extends Expr<B>
 {
     TypeProxy<T> effectiveType();

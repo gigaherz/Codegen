@@ -9,7 +9,6 @@ import org.objectweb.asm.Opcodes;
 
 import java.util.function.ToIntFunction;
 
-@SuppressWarnings("UnstableApiUsage")
 public class Return extends InstructionSource
 {
     private final TypeProxy<?> returnType;
@@ -33,7 +32,13 @@ public class Return extends InstructionSource
 
     public static void compileReturn(TypeProxy<?> returnType, MethodVisitor mv)
     {
-        Class<?> rawType = returnType.getRawType();
+        if (returnType.isDynamic())
+        {
+            mv.visitInsn(Opcodes.ARETURN);
+            return;
+        }
+
+        Class<?> rawType = returnType.getSafeRawType();
         if (rawType == void.class)
         {
             mv.visitInsn(Opcodes.RETURN);

@@ -56,6 +56,7 @@ public class Test implements Vector3I
         return (a = z) > b;
     }
 
+    private float q;
     public Test test2()
     {
         var t = this;
@@ -64,6 +65,9 @@ public class Test implements Vector3I
             var x = y+z;
             t = new Test(x,y,z);
         }
+
+        q++;
+
         return t;
     }
 }

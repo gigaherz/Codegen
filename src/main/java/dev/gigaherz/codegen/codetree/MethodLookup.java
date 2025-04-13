@@ -9,7 +9,6 @@ import dev.gigaherz.codegen.type.TypeProxy;
 
 import java.util.List;
 
-@SuppressWarnings("UnstableApiUsage")
 public class MethodLookup<R>
 {
     private final ClassInfo<R> owner;

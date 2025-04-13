@@ -13,7 +13,6 @@ import dev.gigaherz.codegen.codetree.expr.ExpressionBuilder;
 import dev.gigaherz.codegen.codetree.expr.ValueExpression;
 import dev.gigaherz.codegen.codetree.impl.MethodImplementation;
 import dev.gigaherz.codegen.codetree.impl.SuperCall;
-import dev.gigaherz.codegen.codetree.impl.ThisClass;
 import dev.gigaherz.codegen.type.TypeProxy;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
@@ -24,6 +23,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -43,9 +43,24 @@ public class ClassMaker
         this.dynamicClassLoader = new RuntimeClassLoader(parentClassLoader);
     }
 
-    public BasicClass begin()
+    public ClassDef<Object> begin(Function<BasicClass<Object>,ClassDef<Object>> builder)
     {
-        return new BasicClassImpl();
+        return builder.apply(new TypedClassImpl<>(TypeProxy.of(Object.class)));
+    }
+
+    public <T> ClassDef<T> begin(Class<T> superclass, Function<BasicClass<T>,ClassDef<T>> builder)
+    {
+        return begin(TypeProxy.of(superclass), builder);
+    }
+
+    public <T> ClassDef<T> begin(TypeToken<T> superclass, Function<BasicClass<T>,ClassDef<T>> builder)
+    {
+        return begin(TypeProxy.of(superclass), builder);
+    }
+
+    public <T> ClassDef<T> begin(TypeProxy<T> superclass, Function<BasicClass<T>,ClassDef<T>> builder)
+    {
+        return builder.apply(new TypedClassImpl<>(superclass));
     }
 
     public static <T> FieldToken<T> fieldToken(String name, Class<T> type)
@@ -96,102 +111,66 @@ public class ClassMaker
         };
     }
 
-    public class BasicClassImpl extends ClassImpl<Object, Object> implements BasicClass
+    public class TypedClassImpl<C, T extends C> extends ClassImpl<C, T> implements BasicClass<T>
     {
-
-        public BasicClassImpl()
+        public TypedClassImpl(TypeProxy<C> superclass)
         {
-            super(TypeProxy.of(Object.class));
+            super(superclass);
         }
 
         @Override
-        public <T> ClassDefTyped<? extends T> extending(TypeProxy<T> baseClass)
-        {
-            Class<? super T> rawType = baseClass.getRawType();
-            if (baseClass.isArray())
-                throw new IllegalStateException("The provided class " + baseClass + " is an array!");
-            if (baseClass.isPrimitive())
-                throw new IllegalStateException("The provided class " + baseClass + " is a primitive type!");
-            if (rawType.isInterface())
-                throw new IllegalStateException("The provided class " + baseClass + " is an interface!");
-            if (rawType.isEnum())
-                throw new IllegalStateException("The provided class " + baseClass + " is an enum!");
-            return new ClassImplTyped<>(baseClass, this);
-        }
-
-        @Override
-        public <I> ClassDefTyped<? extends I> implementing(TypeProxy<I> interfaceClass)
+        public ClassDef<T> implementing(TypeProxy<?> interfaceClass)
         {
             implementingInternal(interfaceClass);
-            return new ClassImplTyped<>(this.superClass(), this);
+            return this;
         }
 
         @Override
-        public BasicClass setPublic()
+        public BasicClass<T> setPublic()
         {
             modifiers |= Modifier.PUBLIC;
             return this;
         }
 
         @Override
-        public BasicClass setPrivate()
+        public BasicClass<T> setPrivate()
         {
             modifiers |= Modifier.PRIVATE;
             return this;
         }
 
         @Override
-        public BasicClass setProtected()
+        public BasicClass<T> setProtected()
         {
             modifiers |= Modifier.PROTECTED;
             return this;
         }
 
         @Override
-        public BasicClass setFinal()
+        public BasicClass<T> setFinal()
         {
             modifiers |= Modifier.FINAL;
             return this;
         }
 
         @Override
-        public BasicClass setStatic()
+        public BasicClass<T> setStatic()
         {
             modifiers |= Modifier.STATIC;
             return this;
         }
 
         @Override
-        public BasicClass setAbstract()
+        public BasicClass<T> setAbstract()
         {
             modifiers |= Modifier.ABSTRACT;
             return this;
         }
 
         @Override
-        public <A extends Annotation> BasicClass annotate(A a)
+        public <A extends Annotation> BasicClass<T> annotate(A a)
         {
             annotations.add(a);
-            return this;
-        }
-    }
-
-    public class ClassImplTyped<C, T extends C> extends ClassImpl<C, T> implements ClassDefTyped<T>
-    {
-        public ClassImplTyped(TypeProxy<C> baseClass)
-        {
-            super(baseClass);
-        }
-
-        public ClassImplTyped(TypeProxy<C> baseClass, BasicClassImpl copyFrom)
-        {
-            super(baseClass, copyFrom);
-        }
-
-        @Override
-        public ClassDefTyped<T> implementing(TypeProxy<?> interfaceClass)
-        {
-            implementingInternal(interfaceClass);
             return this;
         }
     }
@@ -216,22 +195,9 @@ public class ClassMaker
             this.superClass = baseClass;
         }
 
-        @SuppressWarnings({"unchecked", "rawtypes"})
-        public ClassImpl(TypeProxy<C> baseClass, BasicClassImpl copyFrom)
-        {
-            this(baseClass);
-
-            superInterfaces.addAll(copyFrom.superInterfaces);
-            copyFrom.fields.forEach((v) -> fields.add(new FieldImpl(v)));
-            copyFrom.constructors.forEach((v) -> constructors.add(new ConstructorImpl(v)));
-            copyFrom.methods.forEach((v) -> methods.add(new MethodImpl(v)));
-            annotations.addAll(copyFrom.annotations);
-            modifiers = copyFrom.modifiers;
-        }
-
         public void implementingInternal(TypeProxy<?> interfaceClass)
         {
-            if (!interfaceClass.getRawType().isInterface())
+            if (!interfaceClass.getSafeRawType().isInterface())
                 throw new IllegalStateException("The provided class " + interfaceClass + " is not an interface!");
             superInterfaces.add(interfaceClass);
         }
@@ -248,14 +214,6 @@ public class ClassMaker
         public <R> DefineMethod<T, R> method(String name, TypeProxy<R> returnType)
         {
             var m = new MethodImpl<>(name, returnType);
-            methods.add(m);
-            return m;
-        }
-
-        @Override
-        public DefineMethod<T, T> method(String name, ThisClass thisClass)
-        {
-            var m = new MethodImpl<>(name, this);
             methods.add(m);
             return m;
         }
@@ -352,15 +310,9 @@ public class ClassMaker
 
         @SuppressWarnings("unchecked")
         @Override
-        public ClassData<T> make()
+        public ClassInfo<T> make()
         {
             return ClassData.getClassInfo((Class<T>) dynamicClassLoader.defineClass(fullName, makeClass()));
-        }
-
-        @Override
-        public TypeToken<T> actualType()
-        {
-            throw new IllegalStateException("Cannot resolve a type definition to its actual type!");
         }
 
         @Override
@@ -421,7 +373,16 @@ public class ClassMaker
         @Override
         public <T1> boolean isSupertypeOf(TypeProxy<T1> subclass)
         {
-            return false; // TODO
+            if (subclass == this) return true;
+            if (!(subclass instanceof ClassImpl)) return false;
+            var sup = subclass.getSuperclass();
+            while(sup != null)
+            {
+                if (sup == this) return true;
+                if (!(sup instanceof ClassImpl)) return false;
+                sup = sup.getSuperclass();
+            }
+            return false;
         }
 
         @Override
@@ -441,6 +402,12 @@ public class ClassMaker
         public Class<? super T> getRawType()
         {
             throw new IllegalStateException("Cannot get the actual type from a ClassMaker, please use make() to generate an actual class first.");
+        }
+
+        @Override
+        public Class<? super T> getSafeRawType()
+        {
+            return superClass.getSafeRawType();
         }
 
         @Override
@@ -1100,7 +1067,7 @@ public class ClassMaker
         @Override
         public Constructor<T> getConstructor(Class<?>... parameterTypes) throws NoSuchMethodException, SecurityException
         {
-            return (Constructor<T>) getRawType().getConstructor(parameterTypes);
+            return (Constructor<T>) getSafeRawType().getConstructor(parameterTypes);
         }
     }
 

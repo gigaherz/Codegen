@@ -4,7 +4,6 @@ import dev.gigaherz.codegen.api.codetree.info.ClassInfo;
 import dev.gigaherz.codegen.api.codetree.info.FieldInfo;
 import dev.gigaherz.codegen.type.TypeProxy;
 
-@SuppressWarnings("UnstableApiUsage")
 public class FieldData<T> implements FieldInfo<T>
 {
     public String name;

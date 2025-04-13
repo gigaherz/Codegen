@@ -7,7 +7,6 @@ import org.objectweb.asm.MethodVisitor;
 
 import java.util.function.ToIntFunction;
 
-@SuppressWarnings("UnstableApiUsage")
 public class UnaryConversion<R, T, B> extends ValueExpressionImpl<R, B>
 {
     private final TypeProxy<R> targetType;

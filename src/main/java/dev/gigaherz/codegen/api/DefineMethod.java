@@ -2,7 +2,6 @@ package dev.gigaherz.codegen.api;
 
 import dev.gigaherz.codegen.type.TypeProxy;
 
-@SuppressWarnings("UnstableApiUsage")
 public interface DefineMethod<C, R> extends Implementable<C, R>, Annotatable<DefineMethod<C, R>>
 {
     // default: package-private

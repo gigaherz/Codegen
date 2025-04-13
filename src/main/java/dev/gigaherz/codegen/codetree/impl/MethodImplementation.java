@@ -24,26 +24,18 @@ import java.util.Stack;
 /**
  * @param <R> The return type of the code block
  */
-@SuppressWarnings("UnstableApiUsage")
 public class MethodImplementation<R>
 {
     public final List<LocalVariable<?>> locals = Lists.newArrayList();
-    public final List<StackEntry> stack = Lists.newArrayList();
 
     private final Stack<Integer> currentStack = new Stack<>();
-    public int maxStack = 0;
 
     private final MethodInfo<R> methodInfo;
     private final CodeBlockInternal<R, R> rootBlock;
 
-    public int stackSize = 0;
+    public int maxStack = 0;
     public int localsSize = 0;
     private Label firstLabel;
-
-    public void pushStack(TypeProxy<?> type)
-    {
-        pushStack(MethodImplementation.slotCount(type));
-    }
 
     public void pushStack(int slots)
     {
@@ -51,11 +43,45 @@ public class MethodImplementation<R>
         maxStack = Math.max(maxStack, peekStack());
     }
 
-    public void popStack()
+    public void dupStack(int count)
+    {
+        var t1 = currentStack.peek();
+        if (t1 != count) throw new IllegalStateException("Invalid dup of " + count + " stack contains " + t1);
+        currentStack.push(count);
+        maxStack = Math.max(maxStack, peekStack());
+    }
+
+    public void dupStackSkip(int count, int skip)
+    {
+        if (skip == 1)
+        {
+            var tmp = currentStack.pop();
+            if (tmp != count) throw new IllegalStateException("Invalid dup of " + count + " stack contains " + tmp);
+            currentStack.push(count);
+            currentStack.push(tmp);
+        }
+        else if(skip == 2)
+        {
+            var t1 = currentStack.pop();
+            if (t1 != count) throw new IllegalStateException("Invalid dup of " + count + " stack contains " + t1);
+            var t2 = currentStack.pop();
+            if (t2 != count) throw new IllegalStateException("Invalid dup of " + count + " stack contains " + t2);
+            currentStack.push(count);
+            currentStack.push(t2);
+            currentStack.push(t1);
+        }
+        else throw new IllegalArgumentException("Skip can only be 1 or 2");
+        maxStack = Math.max(maxStack, peekStack());
+    }
+
+    public void popStack(int expected)
     {
         try
         {
-            currentStack.pop();
+            if (currentStack.isEmpty())
+                throw new IllegalStateException("Invalid pop of " + expected + " stack was empty");
+            int actual = currentStack.pop();
+            if (actual != expected) throw new IllegalStateException("Invalid pop of " + expected + " stack contained " + actual);
         }
         catch(EmptyStackException e)
         {
@@ -132,7 +158,7 @@ public class MethodImplementation<R>
         int slotCount = 1;
         if (effectiveType.isPrimitive())
         {
-            Class<?> rawType = effectiveType.getRawType();
+            Class<?> rawType = effectiveType.getSafeRawType();
             if (rawType == long.class)
             {
                 slotCount = 2;
@@ -171,8 +197,8 @@ public class MethodImplementation<R>
 
     public static TypeProxy<?> applyAutomaticCasting(TypeProxy<?> targetType, TypeProxy<?> valueType)
     {
-        var rt = targetType.getRawType();
-        var rs = valueType.getRawType();
+        var rt = targetType.getSafeRawType();
+        var rs = valueType.getSafeRawType();
 
         // numeric casting
         if (rt.isPrimitive() && rs.isPrimitive())
@@ -300,7 +326,7 @@ public class MethodImplementation<R>
 
     public static boolean isInteger(TypeProxy<?> tt)
     {
-        return tt.isPrimitive() && isInteger(tt.getRawType());
+        return tt.isPrimitive() && isInteger(tt.getSafeRawType());
     }
 
     public static boolean isInteger(Class<?> rs)
@@ -310,7 +336,7 @@ public class MethodImplementation<R>
 
     public static boolean isFloat(TypeProxy<?> tt)
     {
-        return tt.isPrimitive() && isFloat(tt.getRawType());
+        return tt.isPrimitive() && isFloat(tt.getSafeRawType());
     }
 
     public static boolean isFloat(Class<?> rs)
@@ -320,7 +346,7 @@ public class MethodImplementation<R>
 
     public static boolean isDouble(TypeProxy<?> tt)
     {
-        return tt.isPrimitive() && isDouble(tt.getRawType());
+        return tt.isPrimitive() && isDouble(tt.getSafeRawType());
     }
 
     public static boolean isDouble(Class<?> rs)
@@ -330,7 +356,7 @@ public class MethodImplementation<R>
 
     public static boolean isLong(TypeProxy<?> tt)
     {
-        return tt.isPrimitive() && isLong(tt.getRawType());
+        return tt.isPrimitive() && isLong(tt.getSafeRawType());
     }
 
     public static boolean isLong(Class<?> rs)
@@ -340,7 +366,7 @@ public class MethodImplementation<R>
 
     public static boolean isBoolean(TypeProxy<?> tt)
     {
-        return tt.isPrimitive() && isBoolean(tt.getRawType());
+        return tt.isPrimitive() && isBoolean(tt.getSafeRawType());
     }
 
     public static boolean isBoolean(Class<?> rs)
@@ -350,13 +376,13 @@ public class MethodImplementation<R>
 
     public static boolean isVoid(TypeProxy<?> tt)
     {
-        return tt.getRawType() == void.class;
+        return tt.getSafeRawType() == void.class;
     }
 
     public TypeProxy<?> computeArithmeticResultType(TypeProxy<?> a, TypeProxy<?> b)
     {
-        var r1 = a.getRawType();
-        var r2 = b.getRawType();
+        var r1 = a.getSafeRawType();
+        var r2 = b.getSafeRawType();
         var isInt1 = r1 == byte.class || r1 == short.class || r1 == int.class;
         var isInt2 = r2 == byte.class || r2 == short.class || r2 == int.class;
         if (isInt1 && isInt2)
@@ -372,8 +398,11 @@ public class MethodImplementation<R>
 
     public <T, S, B> ValueExpression<T, B> applyAutomaticCasting(TypeProxy<T> targetType, ValueExpression<S, B> value)
     {
-        var rt = targetType.getRawType();
-        var rs = value.effectiveType().getRawType();
+        if (targetType.equals(value.effectiveType()))
+            return (ValueExpression)value;
+
+        var rt = targetType.getSafeRawType();
+        var rs = value.effectiveType().getSafeRawType();
 
         if (rt == rs || rt.isAssignableFrom(rs))
         {
@@ -519,4 +548,5 @@ public class MethodImplementation<R>
     {
         return rootBlock;
     }
+
 }

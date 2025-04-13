@@ -3,7 +3,6 @@ package dev.gigaherz.codegen.codetree;
 import dev.gigaherz.codegen.api.codetree.info.ParamInfo;
 import dev.gigaherz.codegen.type.TypeProxy;
 
-@SuppressWarnings("UnstableApiUsage")
 public class ParamData<T> implements ParamInfo<T>
 {
     public TypeProxy<?> paramType;

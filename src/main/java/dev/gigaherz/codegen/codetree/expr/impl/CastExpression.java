@@ -11,7 +11,6 @@ import org.objectweb.asm.Opcodes;
 import javax.annotation.Nullable;
 import java.util.function.ToIntFunction;
 
-/** @noinspection UnstableApiUsage*/
 public class CastExpression<T, B> extends ValueExpressionImpl<T, B>
 {
     protected final ValueExpression<?, B> expression;
@@ -38,7 +37,7 @@ public class CastExpression<T, B> extends ValueExpressionImpl<T, B>
         {
             expression.compile(defineConstant, mv, needsResult, returnInsnType);
         }
-        else if (targetClass.getRawType().isAssignableFrom(expression.effectiveType().getRawType()))
+        else if (targetClass.isAssignableFrom(expression.effectiveType()))
         {
             throw new IllegalStateException("TODO - Not implemented");
         }
@@ -68,11 +67,11 @@ public class CastExpression<T, B> extends ValueExpressionImpl<T, B>
                 //noinspection unchecked
                 bexp.compile(defineConstant, mv, jumpTrue, jumpFalse);
             }
-            else if (expression.effectiveType().getRawType().equals(boolean.class))
+            else if (expression.effectiveType().getSafeRawType().equals(boolean.class))
             {
                 expression.compile(defineConstant, mv, true, null);
 
-                cb.popStack();
+                cb.popStack(1);
 
                 if (jumpTrue == null)
                 {

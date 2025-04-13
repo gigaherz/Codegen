@@ -22,7 +22,6 @@ import java.util.function.Function;
 import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 
-@SuppressWarnings("UnstableApiUsage")
 public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
 {
     @Nullable
@@ -145,19 +144,28 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
         return owner.defineLocal(name, varType);
     }
 
-    public void pushStack(TypeProxy<?> type)
-    {
-        owner.pushStack(type);
-    }
-
+    @Override
     public void pushStack(int slots)
     {
         owner.pushStack(slots);
     }
 
-    public void popStack()
+    @Override
+    public void popStack(int expected)
     {
-        owner.popStack();
+        owner.popStack(expected);
+    }
+
+    @Override
+    public void dupStack(int count)
+    {
+        owner.dupStack(count);
+    }
+
+    @Override
+    public void dupStackSkip(int count, int skip)
+    {
+        owner.dupStackSkip(count, skip);
     }
 
     public CodeBlockInternal<B, M> getThis()
@@ -387,7 +395,7 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
     @Override
     public final CodeBlock<B, M> superCall(MethodInfo<?> method, List<ValueExpression<?, B>> values)
     {
-        if (!method.owner().thisType().actualType().equals(owner.methodInfo().owner().superClass()))
+        if (!method.owner().thisType().equals(owner.methodInfo().owner().superClass()))
             throw new IllegalStateException("Super call must be a method or constructor of the immediate super class of this class.");
         instructions.add(new SuperCall(owner, methodCall(superVar(), method, values)));
         return this;
@@ -434,6 +442,36 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
     }
 
     @Override
+    public <R, T> ValueExpression<R, B> newObj(TypeProxy<T> classToken, List<ValueExpression<?, B>> values)
+    {
+        var ml = new MethodLookup<>(classToken, "<init>");
+        for (var expr : values)
+        {
+            ml = ml.withParam(expr.effectiveType());
+        }
+
+        var method = ml.result();
+
+        List<? extends ParamInfo<?>> params = method.params();
+        var lValues = new ArrayList<>(values);
+        if (params.size() != lValues.size())
+            throw new IllegalStateException("Mismatched set of values. Expected: " + params.stream().map(ParamInfo::paramType).toList()
+                    + "; Received: " + lValues.stream().map(ValueExpression::effectiveType).toList());
+        for (int i = 0; i < params.size(); i++)
+        {
+            var param = params.get(i);
+            var val = lValues.get(i);
+            var lVal = owner.applyAutomaticCasting(param.paramType(), val);
+            if (!param.paramType().isSupertypeOf(lVal.effectiveType()))
+                throw new IllegalStateException("Param " + i + " cannot be converted from " + lVal.effectiveType() + " to " + param.paramType());
+            if (lVal != val)
+                lValues.set(i, lVal);
+        }
+
+        return new NewExpression(this, classToken, method, values);
+    }
+
+    @Override
     public final <R> ValueExpression<R, B> methodCall(@Nullable ValueExpression<?, B> objRef, MethodInfo<R> method, List<ValueExpression<?, B>> values)
     {
         List<? extends ParamInfo<?>> params = method.params();
@@ -447,7 +485,7 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
             var val = lValues.get(i);
             var lVal = owner.applyAutomaticCasting(param.paramType(), val);
             if (!param.paramType().isSupertypeOf(lVal.effectiveType()))
-                throw new IllegalStateException("Param " + i + " cannot be converted from " + lVal.effectiveType() + " to " + param.paramType().actualType());
+                throw new IllegalStateException("Param " + i + " cannot be converted from " + lVal.effectiveType() + " to " + param.paramType());
             if (lVal != val)
                 lValues.set(i, lVal);
         }
@@ -647,16 +685,41 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
     }
     public ValueExpression<?, B> shiftRight(ValueExpression<?, B> a, ValueExpression<?, B> b)
     {
-        return shiftOperator(a, b, Opcodes.ISHR, Opcodes.LSHR, "&");
+        return shiftOperator(a, b, Opcodes.ISHR, Opcodes.LSHR, ">>");
     }
     public ValueExpression<?, B> shiftRightUnsigned(ValueExpression<?, B> a, ValueExpression<?, B> b)
     {
-        return shiftOperator(a, b, Opcodes.IUSHR, Opcodes.LUSHR, "&");
+        return shiftOperator(a, b, Opcodes.IUSHR, Opcodes.LUSHR, ">>>");
     }
     public ValueExpression<?, B> index(ValueExpression<?, B> array, ValueExpression<?, B> index)
     {
         throw new IllegalStateException("TODO -- NOT IMPLEMENTED!");
     }
+
+    @Override
+    public <X> ValueExpression<X, B> preInc(LRef<X> target)
+    {
+        return new IncrementOperator<>(this, target, true, true);
+    }
+
+    @Override
+    public <X> ValueExpression<X, B> preDec(LRef<X> target)
+    {
+        return new IncrementOperator<>(this, target, true, false);
+    }
+
+    @Override
+    public <X> ValueExpression<X, B> postInc(LRef<X> target)
+    {
+        return new IncrementOperator<>(this, target, false, true);
+    }
+
+    @Override
+    public <X> ValueExpression<X, B> postDec(LRef<X> target)
+    {
+        return new IncrementOperator<>(this, target, false, false);
+    }
+
     public ValueExpression<?, B> neg(ValueExpression<?, B> a)
     {
         return unaryArithmeticOperator(a, Opcodes.INEG, Opcodes.LNEG, Opcodes.FNEG, Opcodes.DNEG, "&");
@@ -664,9 +727,10 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
     /** @noinspection unchecked, rawtypes */
     public ValueExpression<?, B> bitNot(ValueExpression<?, B> a)
     {
-        if (a.effectiveType().getRawType() == int.class)
+        Class<?> rawType = a.effectiveType().getSafeRawType();
+        if (rawType == int.class)
             return new BinaryOperator(this, Opcodes.IXOR, a, literal(-1), a.effectiveType());
-        if (a.effectiveType().getRawType() == long.class)
+        if (rawType == long.class)
             return new BinaryOperator(this, Opcodes.LXOR, a, literal(-1L), a.effectiveType());
 
         throw new IllegalStateException("Cannot apply '~' operator to value of type " + a.effectiveType());
@@ -680,13 +744,14 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
             throw new IllegalStateException("Cannot find result type for an arithmetic operation between " + a.effectiveType() + " and " + b.effectiveType());
         var a1 = owner.applyAutomaticCasting(resultType, a);
         var b1 = owner.applyAutomaticCasting(resultType, b);
-        if (resultType.getRawType() == int.class)
+        Class<?> rawType = resultType.getSafeRawType();
+        if (rawType == int.class)
             return new BinaryOperator(this, intOp, a1, b1, resultType);
-        if (resultType.getRawType() == long.class)
+        if (rawType == long.class)
             return new BinaryOperator(this, longOp, a1, b1, resultType);
-        if (resultType.getRawType() == float.class)
+        if (rawType == float.class)
             return new BinaryOperator(this, floatOp, a1, b1, resultType);
-        if (resultType.getRawType() == double.class)
+        if (rawType == double.class)
             return new BinaryOperator(this, doubleOp, a1, b1, resultType);
 
         throw new IllegalStateException("Cannot apply '"+opname+"' operator between values of types " + a.effectiveType() + " and " + b.effectiveType());
@@ -700,9 +765,10 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
             throw new IllegalStateException("Cannot find result type for an arithmetic operation between " + a.effectiveType() + " and " + b.effectiveType());
         var a1 = owner.applyAutomaticCasting(resultType, a);
         var b1 = owner.applyAutomaticCasting(resultType, b);
-        if (resultType.getRawType() == int.class)
+        Class<?> rawType = resultType.getSafeRawType();
+        if (rawType == int.class)
             return new BinaryOperator(this, intOp, a1, b1, resultType);
-        if (resultType.getRawType() == long.class)
+        if (rawType == long.class)
             return new BinaryOperator(this, longOp, a1, b1, resultType);
 
         throw new IllegalStateException("Cannot apply '"+opname+"' operator between values of types " + a.effectiveType() + " and " + b.effectiveType());
@@ -711,9 +777,10 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
     /** @noinspection unchecked, rawtypes */
     private ValueExpression<?, B> shiftOperator(ValueExpression<?, B> a, ValueExpression<?, B> b, int intOp, int longOp, String opname)
     {
-        if (a.effectiveType().getRawType() == int.class)
+        Class<?> rawType = a.effectiveType().getSafeRawType();
+        if (rawType == int.class)
             return new BinaryOperator(this, intOp, a, b, a.effectiveType());
-        if (a.effectiveType().getRawType() == long.class)
+        if (rawType == long.class)
             return new BinaryOperator(this, longOp, a, b, a.effectiveType());
 
         throw new IllegalStateException("Cannot apply '"+opname+"' operator between values of types " + a.effectiveType() + " and " + b.effectiveType());
@@ -722,13 +789,14 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
     /** @noinspection SameParameterValue */
     private ValueExpression<?, B> unaryArithmeticOperator(ValueExpression<?, B> a, int intOp, int longOp, int floatOp, int doubleOp, String opname)
     {
-        if (a.effectiveType().getRawType() == int.class)
+        Class<?> rawType = a.effectiveType().getSafeRawType();
+        if (rawType == int.class)
             return new UnaryOperator<>(this, intOp, a);
-        if (a.effectiveType().getRawType() == long.class)
+        if (rawType == long.class)
             return new UnaryOperator<>(this, longOp, a);
-        if (a.effectiveType().getRawType() == float.class)
+        if (rawType == float.class)
             return new UnaryOperator<>(this, floatOp, a);
-        if (a.effectiveType().getRawType() == double.class)
+        if (rawType == double.class)
             return new UnaryOperator<>(this, doubleOp, a);
 
         throw new IllegalStateException("Cannot apply '"+opname+"' operator to value of type " + a.effectiveType());
@@ -755,9 +823,8 @@ public class CodeBlockImpl<B, P, M> implements CodeBlockInternal<B, M>
         return this;
     }
 
-    /** @noinspection unchecked*/
     @Override
-    public <T> CodeBlock<B, M> forLoop(@Nullable Consumer<CodeBlock<T, M>> init, @Nullable BooleanExpression<?> condition, @Nullable Consumer<CodeBlock<T, M>> step, Consumer<CodeBlock<T, M>> body)
+    public <T> CodeBlock<B, M> forLoop(@Nullable Consumer<CodeBlock<T, M>> init, @Nullable Function<CodeBlock<T, M>, BooleanExpression<T>> condition, @Nullable Consumer<CodeBlock<T, M>> step, Consumer<CodeBlock<T, M>> body)
     {
         instructions.add(new ForBlock<T,B,M>(this, init, condition, step, body));
         return this;

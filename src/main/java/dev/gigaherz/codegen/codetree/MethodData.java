@@ -8,7 +8,6 @@ import dev.gigaherz.codegen.type.TypeProxy;
 
 import java.util.List;
 
-@SuppressWarnings("UnstableApiUsage")
 public class MethodData<R> implements MethodInfo<R>
 {
     public List<ParamInfo<?>> params = Lists.newArrayList();

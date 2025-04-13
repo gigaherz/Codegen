@@ -8,7 +8,6 @@ import org.objectweb.asm.MethodVisitor;
 
 import java.util.function.ToIntFunction;
 
-@SuppressWarnings("UnstableApiUsage")
 public class VarExpression<T, B> extends ValueExpressionImpl<T, B>
 {
     private final LocalVariable<T> localVariable;
@@ -31,8 +30,8 @@ public class VarExpression<T, B> extends ValueExpressionImpl<T, B>
         cb.beforeExpressionCompile();
         if (needsResult)
         {
-            cb.pushStack(localVariable.variableType);
             LocalLoad.compile(localVariable, mv);
+            cb.pushStack(localVariable.variableType);
         }
         cb.afterExpressionCompile(needsResult);
     }

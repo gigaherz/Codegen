@@ -53,7 +53,7 @@ public class NotExpression<B> extends BooleanExpressionImpl<B>
         {
             first.compile(defineConstant, mv, true, null);
             mv.visitJumpInsn(Opcodes.IFEQ, jumpTrue);
-            cb.popStack();
+            cb.popStack(1);
             mv.visitJumpInsn(Opcodes.GOTO, jumpFalse);
         }
     }

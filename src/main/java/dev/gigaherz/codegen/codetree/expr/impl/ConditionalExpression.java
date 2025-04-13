@@ -12,7 +12,6 @@ import org.objectweb.asm.Opcodes;
 
 import java.util.function.ToIntFunction;
 
-@SuppressWarnings("UnstableApiUsage")
 public class ConditionalExpression<T, B> extends ValueExpressionImpl<T, B>
 {
     private final BooleanExpression<B> condition;
@@ -47,7 +46,7 @@ public class ConditionalExpression<T, B> extends ValueExpressionImpl<T, B>
             Return.compileReturn(returnInsnType, mv);
         else
             mv.visitJumpInsn(Opcodes.GOTO, jumpEnd);
-        cb.popStack();
+        cb.popStack(1);
         mv.visitLabel(jumpFalse);
         falseBranch.compile(defineConstant, mv, !MethodImplementation.isVoid(falseBranch.effectiveType()), null);
         if (returnInsnType == null)

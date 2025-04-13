@@ -2,36 +2,28 @@ package dev.gigaherz.codegen.api;
 
 import dev.gigaherz.codegen.type.TypeProxy;
 
-@SuppressWarnings("UnstableApiUsage")
-public interface BasicClass extends ClassDef<Object>, Annotatable<BasicClass>
+public interface BasicClass<T> extends ClassDef<T>, Annotatable<BasicClass<T>>
 {
-    <T> ClassDefTyped<? extends T> extending(TypeProxy<T> baseClass);
+    DefineClass<T> implementing(TypeProxy<?> interfaceClass);
 
-    default <T> ClassDefTyped<? extends T> extending(Class<T> baseClass)
-    {
-        return extending(TypeProxy.of(baseClass));
-    }
-
-    <I> ClassDefTyped<? extends I> implementing(TypeProxy<I> interfaceClass);
-
-    default <T> ClassDefTyped<? extends T> implementing(Class<T> baseClass)
+    default DefineClass<T> implementing(Class<?> baseClass)
     {
         return implementing(TypeProxy.of(baseClass));
     }
 
     // default: package-private
-    BasicClass setPublic();
+    BasicClass<T> setPublic();
 
-    BasicClass setPrivate();
+    BasicClass<T> setPrivate();
 
-    BasicClass setProtected();
+    BasicClass<T> setProtected();
 
     // default: non-final
-    BasicClass setFinal();
+    BasicClass<T> setFinal();
 
     // nested default: inner; top-level: N/A
-    BasicClass setStatic();
+    BasicClass<T> setStatic();
 
     // default: not abstract
-    BasicClass setAbstract();
+    BasicClass<T> setAbstract();
 }

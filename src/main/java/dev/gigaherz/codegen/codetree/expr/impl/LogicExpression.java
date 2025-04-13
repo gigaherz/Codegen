@@ -120,8 +120,8 @@ public class LogicExpression<B> extends BooleanExpressionImpl<B>
 
             if (MethodImplementation.isInteger(first.effectiveType()))
             {
-                cb.popStack();
-                cb.popStack();
+                cb.popStack(1);
+                cb.popStack(1);
                 if (jumpTrue == null)
                 {
                     switch (comparisonType)
@@ -151,10 +151,10 @@ public class LogicExpression<B> extends BooleanExpressionImpl<B>
                         mv.visitJumpInsn(Opcodes.GOTO, jumpFalse);
                 }
             }
-            else if (MethodImplementation.isFloat(first.effectiveType()))
+            else if (MethodImplementation.isLong(first.effectiveType()))
             {
-                cb.popStack();
-                cb.popStack();
+                cb.popStack(2);
+                cb.popStack(2);
                 mv.visitInsn(Opcodes.LCMP);
                 cb.pushStack(1);
                 if (jumpTrue == null)
@@ -185,12 +185,12 @@ public class LogicExpression<B> extends BooleanExpressionImpl<B>
                     if (jumpFalse != null)
                         mv.visitJumpInsn(Opcodes.GOTO, jumpFalse);
                 }
-                cb.popStack();
+                cb.popStack(1);
             }
             else if (MethodImplementation.isFloat(first.effectiveType()))
             {
-                cb.popStack();
-                cb.popStack();
+                cb.popStack(1);
+                cb.popStack(1);
                 mv.visitInsn(Opcodes.FCMPL);
                 cb.pushStack(1);
                 if (jumpTrue == null)
@@ -221,12 +221,12 @@ public class LogicExpression<B> extends BooleanExpressionImpl<B>
                     if (jumpFalse != null)
                         mv.visitJumpInsn(Opcodes.GOTO, jumpFalse);
                 }
-                cb.popStack();
+                cb.popStack(1);
             }
             else if (MethodImplementation.isDouble(first.effectiveType()))
             {
-                cb.popStack();
-                cb.popStack();
+                cb.popStack(2);
+                cb.popStack(2);
                 mv.visitInsn(Opcodes.DCMPL);
                 cb.pushStack(1);
                 if (jumpTrue == null)
@@ -257,12 +257,12 @@ public class LogicExpression<B> extends BooleanExpressionImpl<B>
                     if (jumpFalse != null)
                         mv.visitJumpInsn(Opcodes.GOTO, jumpFalse);
                 }
-                cb.popStack();
+                cb.popStack(1);
             }
             else
             {
-                cb.popStack();
-                cb.popStack();
+                cb.popStack(1);
+                cb.popStack(1);
                 if (jumpTrue == null)
                 {
                     switch (comparisonType)

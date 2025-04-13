@@ -25,7 +25,7 @@ public class ClassData<T> implements ClassInfo<T>
     public final List<MethodInfo<?>> methods = Lists.newArrayList();
     public final List<FieldInfo<?>> fields = Lists.newArrayList();
 
-    private ClassData<? super T> superClassInfo;
+    private ClassInfo<? super T> superClassInfo;
 
 
     private ClassData(TypeProxy<? super T> superClass, TypeProxy<?> thisType)
@@ -82,7 +82,7 @@ public class ClassData<T> implements ClassInfo<T>
             return first;
         if (superClassInfo == null)
         {
-            if (superClass.getRawType() != Object.class)
+            if (superClass.getSafeRawType() != Object.class)
             {
                 superClassInfo = getSuperClassInfo(superClass);
             }
@@ -97,28 +97,31 @@ public class ClassData<T> implements ClassInfo<T>
 
     private static final Map<Class<?>, ClassData<?>> classInfoCache = new IdentityHashMap<>();
 
-    public static <C> ClassData<? super C> getSuperClassInfo(Class<C> cls)
+    public static <C> ClassInfo<? super C> getSuperClassInfo(Class<C> cls)
     {
         return getClassInfo(cls, TypeProxy.of(cls));
     }
 
-    public static <C> ClassData<? super C> getSuperClassInfo(TypeProxy<C> cls)
+    public static <C> ClassInfo<? super C> getSuperClassInfo(TypeProxy<C> cls)
     {
-        return (ClassData<? super C>) getSuperClassInfo(cls.getSuperclass());
+        return getSuperClassInfo(cls.getSuperclass());
     }
 
-    public static <C> ClassData<C> getClassInfo(TypeProxy<C> cls)
+    public static <C> ClassInfo<C> getClassInfo(TypeProxy<C> cls)
     {
+        if (cls instanceof ClassInfo ci)
+            return ci;
+
         var rawType = java.util.Objects.requireNonNull(cls.getRawType());
         return getClassInfo(rawType, cls);
     }
 
-    public static <C> ClassData<C> getClassInfo(Class<C> cls)
+    public static <C> ClassInfo<C> getClassInfo(Class<C> cls)
     {
         return getClassInfo(cls, TypeProxy.of(cls));
     }
 
-    public static <C> ClassData<C> getClassInfo(Class<? super C> cls, TypeProxy<C> clsToken)
+    public static <C> ClassInfo<C> getClassInfo(Class<? super C> cls, TypeProxy<C> clsToken)
     {
         TypeProxy<? super C> superToken = clsToken.getSuperclass();
         ClassData<C> ci = new ClassData<>(superToken, clsToken);

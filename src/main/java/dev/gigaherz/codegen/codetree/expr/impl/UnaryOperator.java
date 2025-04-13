@@ -7,7 +7,6 @@ import org.objectweb.asm.MethodVisitor;
 
 import java.util.function.ToIntFunction;
 
-@SuppressWarnings("UnstableApiUsage")
 public class UnaryOperator<R, B> extends ValueExpressionImpl<R, B>
 {
     private final int opcode;

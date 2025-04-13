@@ -13,20 +13,19 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.ToIntFunction;
 
-@SuppressWarnings("UnstableApiUsage")
 public class MethodCallExpression<R, B> extends ValueExpressionImpl<R, B>
 {
     @Nullable
     private final ValueExpression<?, B> objRef;
     private final MethodInfo<R> method;
-    private final List<ValueExpression<?, B>> lValues;
+    private final List<ValueExpression<?, B>> values;
 
-    public MethodCallExpression(CodeBlockInternal<B, ?> cb, @Nullable ValueExpression<?, B> objRef, MethodInfo<R> method, List<ValueExpression<?, B>> lValues)
+    public MethodCallExpression(CodeBlockInternal<B, ?> cb, @Nullable ValueExpression<?, B> objRef, MethodInfo<R> method, List<ValueExpression<?, B>> values)
     {
         super(cb);
         this.objRef = objRef;
         this.method = method;
-        this.lValues = lValues;
+        this.values = values;
     }
 
     @Override
@@ -41,22 +40,22 @@ public class MethodCallExpression<R, B> extends ValueExpressionImpl<R, B>
         cb.beforeExpressionCompile();
         if (method.isStatic())
         {
-            lValues.forEach(val -> val.compile(defineConstant, mv, true, null));
-            for (int i = 0; i < lValues.size(); i++) cb.popStack();
+            values.forEach(val -> val.compile(defineConstant, mv, true, null));
+            for (int i = values.size()-1; i >= 0; i--) cb.popStack(values.get(i).effectiveType());
             mv.visitMethodInsn(Opcodes.INVOKESTATIC, method.owner().thisType().getInternalName(), method.name(), method.getDescriptor(), method.owner().thisType().isInterface());
         }
         else if (method.name().equals("<init>"))
         {
             Objects.requireNonNull(objRef).compile(defineConstant, mv, true, null);
-            lValues.forEach(val -> val.compile(defineConstant, mv, true, null));
-            for (int i = 0; i <= lValues.size(); i++) cb.popStack();
+            values.forEach(val -> val.compile(defineConstant, mv, true, null));
+            for (int i = values.size(); i >= 0; i--) cb.popStack(i == values.size() ? 1 : MethodImplementation.slotCount(values.get(i).effectiveType()));
             mv.visitMethodInsn(Opcodes.INVOKESPECIAL, method.owner().thisType().getInternalName(), method.name(), method.getDescriptor(), method.owner().thisType().isInterface());
         }
         else
         {
             Objects.requireNonNull(objRef).compile(defineConstant, mv, true, null);
-            lValues.forEach(val -> val.compile(defineConstant, mv, true, null));
-            for (int i = 0; i <= lValues.size(); i++) cb.popStack();
+            values.forEach(val -> val.compile(defineConstant, mv, true, null));
+            for (int i = values.size(); i >= 0; i--) cb.popStack(i == values.size() ? 1 : MethodImplementation.slotCount(values.get(i).effectiveType()));
             mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, method.owner().thisType().getInternalName(), method.name(), method.getDescriptor(), method.owner().thisType().isInterface());
         }
         if (!method.returnType().isVoid())
@@ -64,8 +63,9 @@ public class MethodCallExpression<R, B> extends ValueExpressionImpl<R, B>
             cb.pushStack(method.returnType());
             if (!needsResult)
             {
-                mv.visitInsn(MethodImplementation.slotCount(method.returnType()) == 2 ? Opcodes.POP2 : Opcodes.POP);
-                cb.popStack();
+                int retSlots = MethodImplementation.slotCount(method.returnType());
+                mv.visitInsn(retSlots == 2 ? Opcodes.POP2 : Opcodes.POP);
+                cb.popStack(retSlots);
             }
         }
         else if (needsResult)

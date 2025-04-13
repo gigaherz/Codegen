@@ -56,7 +56,7 @@ public class LocalLoad extends InstructionSource
         }
         else
         {
-            Class<?> rawType = localVariable.variableType.getRawType();
+            Class<?> rawType = localVariable.variableType.getSafeRawType();
             if (rawType == long.class)
             {
                 mv.visitVarInsn(Opcodes.LLOAD, localVariable.index);

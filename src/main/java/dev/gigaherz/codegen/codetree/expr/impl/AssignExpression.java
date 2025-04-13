@@ -10,7 +10,6 @@ import org.objectweb.asm.Opcodes;
 
 import java.util.function.ToIntFunction;
 
-@SuppressWarnings("UnstableApiUsage")
 public class AssignExpression<T, B> extends ValueExpressionImpl<T, B>
 {
     LRef<T> target;
@@ -37,19 +36,17 @@ public class AssignExpression<T, B> extends ValueExpressionImpl<T, B>
         target.compileBefore(defineConstant, mv);
 
         int valueSize = MethodImplementation.slotCount(value.effectiveType());
-
-        cb.pushStack(valueSize);
+        //cb.pushStack(valueSize);
 
         value.compile(defineConstant, mv, true, null);
 
         if (needsResult)
         {
-            cb.pushStack(valueSize);
             mv.visitInsn(valueSize == 2 ? Opcodes.DUP2 : Opcodes.DUP);
+            cb.dupStack(valueSize);
         }
 
         target.compileAfter(defineConstant, mv);
-        cb.popStack();
 
         cb.afterExpressionCompile(needsResult);
     }

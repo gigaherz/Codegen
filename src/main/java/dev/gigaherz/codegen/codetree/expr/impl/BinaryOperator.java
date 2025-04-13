@@ -2,12 +2,12 @@ package dev.gigaherz.codegen.codetree.expr.impl;
 
 import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
 import dev.gigaherz.codegen.codetree.expr.ValueExpression;
+import dev.gigaherz.codegen.codetree.impl.MethodImplementation;
 import dev.gigaherz.codegen.type.TypeProxy;
 import org.objectweb.asm.MethodVisitor;
 
 import java.util.function.ToIntFunction;
 
-/** @noinspection UnstableApiUsage*/
 public class BinaryOperator<T, B> extends ValueExpressionImpl<T, B>
 {
     private final int opcode;
@@ -40,8 +40,8 @@ public class BinaryOperator<T, B> extends ValueExpressionImpl<T, B>
 
         if (needsResult)
         {
-            cb.popStack();
-            cb.popStack();
+            cb.popStack(second.effectiveType());
+            cb.popStack(first.effectiveType());
             mv.visitInsn(opcode);
             cb.pushStack(resultType);
         }

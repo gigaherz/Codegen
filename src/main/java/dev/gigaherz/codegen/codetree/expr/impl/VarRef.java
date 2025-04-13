@@ -1,14 +1,15 @@
 package dev.gigaherz.codegen.codetree.expr.impl;
 
 import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
+import dev.gigaherz.codegen.codetree.expr.ValueExpression;
 import dev.gigaherz.codegen.codetree.impl.LocalStore;
 import dev.gigaherz.codegen.codetree.impl.LocalVariable;
+import dev.gigaherz.codegen.codetree.impl.MethodImplementation;
 import dev.gigaherz.codegen.type.TypeProxy;
 import org.objectweb.asm.MethodVisitor;
 
 import java.util.function.ToIntFunction;
 
-@SuppressWarnings("UnstableApiUsage")
 public class VarRef<T, B> extends LRefImpl<T, B>
 {
     private final LocalVariable<T> localVariable;
@@ -27,6 +28,12 @@ public class VarRef<T, B> extends LRefImpl<T, B>
     }
 
     @Override
+    public ValueExpression<T, B> value()
+    {
+        return new VarExpression<>(cb, localVariable);
+    }
+
+    @Override
     public void compileBefore(ToIntFunction<Object> defineConstant, MethodVisitor mv)
     {
         // nothing needed before
@@ -36,6 +43,18 @@ public class VarRef<T, B> extends LRefImpl<T, B>
     public void compileAfter(ToIntFunction<Object> defineConstant, MethodVisitor mv)
     {
         LocalStore.compile(localVariable, mv);
-        cb.popStack();
+        cb.popStack(localVariable.variableType);
+    }
+
+    @Override
+    public boolean isLocal()
+    {
+        return true;
+    }
+
+    @Override
+    public int getLocalIndex()
+    {
+        return localVariable.index;
     }
 }

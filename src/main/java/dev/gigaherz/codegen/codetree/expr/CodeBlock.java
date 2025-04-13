@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-@SuppressWarnings("UnstableApiUsage")
 public interface CodeBlock<B, M> extends ExpressionBuilder<B, M>
 {
     TypeProxy<B> returnType();
@@ -126,8 +125,10 @@ public interface CodeBlock<B, M> extends ExpressionBuilder<B, M>
     @SuppressWarnings("UnusedReturnValue")
     CodeBlock<B, M> ifElse(BooleanExpression<?> condition, Consumer<CodeBlock<B, M>> trueBranch, Consumer<CodeBlock<B, M>> falseBranch);
 
-    /** @noinspection unchecked*/
-    <T> CodeBlock<B, M> forLoop(@Nullable Consumer<CodeBlock<T, M>> init, @Nullable BooleanExpression<?> condition, @Nullable Consumer<CodeBlock<T, M>> step, Consumer<CodeBlock<T, M>> body);
+    <T> CodeBlock<B, M> forLoop(@Nullable Consumer<CodeBlock<T, M>> init,
+                                @Nullable Function<CodeBlock<T, M>, BooleanExpression<T>> condition,
+                                @Nullable Consumer<CodeBlock<T, M>> step,
+                                Consumer<CodeBlock<T, M>> body);
 
     <V, S extends V> CodeBlock<B, M> forEach(String localName, TypeProxy<V> varType, ValueExpression<S, B> collection, Consumer<CodeBlock<B, M>> body);
 

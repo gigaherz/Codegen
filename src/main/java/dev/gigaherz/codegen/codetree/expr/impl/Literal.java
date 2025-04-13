@@ -10,7 +10,6 @@ import org.objectweb.asm.Opcodes;
 import javax.annotation.Nullable;
 import java.util.function.ToIntFunction;
 
-/** @noinspection UnstableApiUsage*/
 public abstract class Literal<T, B> extends ValueExpressionImpl<T,B>
 {
     protected final T value;
@@ -39,7 +38,9 @@ public abstract class Literal<T, B> extends ValueExpressionImpl<T,B>
         @Override
         public void compile(ToIntFunction<Object> defineConstant, MethodVisitor mv, boolean needsResult, TypeProxy<?> returnInsnType)
         {
-            var raw = valueType.getRawType();
+            cb.beforeExpressionCompile();
+
+            var raw = valueType.getSafeRawType();
             if (raw == byte.class ||raw == short.class ||raw == int.class)
             {
                 var val = value.intValue();
@@ -69,6 +70,7 @@ public abstract class Literal<T, B> extends ValueExpressionImpl<T,B>
                         mv.visitLdcInsn(constantIndex);
                     }
                 }
+                cb.pushStack(1);
             }
             else if (raw == long.class)
             {
@@ -82,6 +84,7 @@ public abstract class Literal<T, B> extends ValueExpressionImpl<T,B>
                     int constantIndex = defineConstant.applyAsInt(val);
                     mv.visitLdcInsn(constantIndex);
                 }
+                cb.pushStack(2);
             }
             else if (raw == float.class)
             {
@@ -97,6 +100,7 @@ public abstract class Literal<T, B> extends ValueExpressionImpl<T,B>
                     int constantIndex = defineConstant.applyAsInt(val);
                     mv.visitLdcInsn(constantIndex);
                 }
+                cb.pushStack(1);
             }
             else if (raw == double.class)
             {
@@ -110,7 +114,14 @@ public abstract class Literal<T, B> extends ValueExpressionImpl<T,B>
                     int constantIndex = defineConstant.applyAsInt(val);
                     mv.visitLdcInsn(constantIndex);
                 }
+                cb.pushStack(2);
             }
+            else
+            {
+                throw new IllegalStateException("Type " + valueType + " is not numeric!");
+            }
+
+            cb.afterExpressionCompile(needsResult);
         }
     }
 

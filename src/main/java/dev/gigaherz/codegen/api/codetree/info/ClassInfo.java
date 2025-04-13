@@ -5,14 +5,13 @@ import dev.gigaherz.codegen.type.TypeProxy;
 import java.util.List;
 import java.util.Optional;
 
-@SuppressWarnings("UnstableApiUsage")
 public interface ClassInfo<T>
 {
     TypeProxy<? super T> superClass();
 
     TypeProxy<T> thisType();
 
-    List<? extends MethodInfo<?>> constructors();
+    List<? extends MethodInfo<Void>> constructors();
 
     List<? extends MethodInfo<?>> methods();
 

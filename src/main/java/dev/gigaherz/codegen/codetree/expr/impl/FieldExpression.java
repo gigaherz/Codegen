@@ -9,7 +9,6 @@ import org.objectweb.asm.MethodVisitor;
 
 import java.util.function.ToIntFunction;
 
-@SuppressWarnings("UnstableApiUsage")
 public class FieldExpression<T, B> extends ValueExpressionImpl<T, B>
 {
     private final ValueExpression<?, B> objRef;
@@ -37,8 +36,8 @@ public class FieldExpression<T, B> extends ValueExpressionImpl<T, B>
         if (needsResult)
         {
             objRef.compile(defineConstant, mv, true, null);
+            cb.popStack(1);
             FieldLoad.compile(field, mv);
-            cb.popStack();
             cb.pushStack(field.type());
         }
 

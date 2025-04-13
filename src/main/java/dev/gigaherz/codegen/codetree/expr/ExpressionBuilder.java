@@ -3,13 +3,13 @@ package dev.gigaherz.codegen.codetree.expr;
 import dev.gigaherz.codegen.api.FieldToken;
 import dev.gigaherz.codegen.api.VarToken;
 import dev.gigaherz.codegen.codetree.MethodLookup;
+import dev.gigaherz.codegen.codetree.expr.impl.UnaryOperator;
 import dev.gigaherz.codegen.type.TypeProxy;
 
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-@SuppressWarnings("UnstableApiUsage")
 public interface ExpressionBuilder<B, M>
 {
     <T> ValueExpression<T, B> field(String fieldName);
@@ -226,6 +226,63 @@ public interface ExpressionBuilder<B, M>
         return this.staticCall(TypeProxy.of(classToken), methodName, methodLookup, values);
     }
 
+    default <T> ValueExpression<?, B> newObj(TypeProxy<T> classToken)
+    {
+        return newObj(classToken, List.of());
+    }
+
+    default <R, T> ValueExpression<R, B> newObj(TypeProxy<T> classToken, ValueExpression<?, B> val0)
+    {
+        return newObj(classToken, List.of(val0));
+    }
+
+    default <R, T> ValueExpression<R, B> newObj(TypeProxy<T> classToken, ValueExpression<?, B> val0, ValueExpression<?, B> val1)
+    {
+        return newObj(classToken, List.of(val0, val1));
+    }
+
+    default <R, T> ValueExpression<R, B> newObj(TypeProxy<T> classToken, ValueExpression<?, B> val0, ValueExpression<?, B> val1, ValueExpression<?, B> val2)
+    {
+        return newObj(classToken, List.of(val0, val1, val2));
+    }
+
+    default <R, T> ValueExpression<R, B> newObj(TypeProxy<T> classToken, ValueExpression<?, B> val0, ValueExpression<?, B> val1, ValueExpression<?, B> val2, ValueExpression<?, B> val3)
+    {
+        return newObj(classToken, List.of(val0, val1, val2, val3));
+    }
+
+    <R, T> ValueExpression<R, B> newObj(TypeProxy<T> classToken, List<ValueExpression<?, B>> values);
+
+    default <R, T> ValueExpression<R, B> newObj(Class<T> classToken)
+    {
+        return newObj(classToken, List.of());
+    }
+
+    default <R, T> ValueExpression<R, B> newObj(Class<T> classToken, ValueExpression<?, B> val0)
+    {
+        return newObj(classToken, List.of(val0));
+    }
+
+    default <R, T> ValueExpression<R, B> newObj(Class<T> classToken, ValueExpression<?, B> val0, ValueExpression<?, B> val1)
+    {
+        return newObj(classToken, List.of(val0, val1));
+    }
+
+    default <R, T> ValueExpression<R, B> newObj(Class<T> classToken, ValueExpression<?, B> val0, ValueExpression<?, B> val1, ValueExpression<?, B> val2)
+    {
+        return newObj(classToken, List.of(val0, val1, val2));
+    }
+
+    default <R, T> ValueExpression<R, B> newObj(Class<T> classToken, ValueExpression<?, B> val0, ValueExpression<?, B> val1, ValueExpression<?, B> val2, ValueExpression<?, B> val3)
+    {
+        return newObj(classToken, List.of(val0, val1, val2, val3));
+    }
+
+    default <R, T> ValueExpression<R, B> newObj(Class<T> classToken, List<ValueExpression<?, B>> values)
+    {
+        return this.newObj(TypeProxy.of(classToken), values);
+    }
+
     <C> ValueExpression<C, B> iif(BooleanExpression<B> condition, ValueExpression<C, B> trueBranch, ValueExpression<C, B> falseBranch);
 
     <T> ValueExpression<T, B> iif(BooleanExpression<B> condition, Consumer<CodeBlock<T, M>> trueBranch, Consumer<CodeBlock<T, M>> falseBranch);
@@ -263,6 +320,11 @@ public interface ExpressionBuilder<B, M>
     ValueExpression<?, B> shiftRightUnsigned(ValueExpression<?, B> a, ValueExpression<?, B> b);
 
     ValueExpression<?, B> index(ValueExpression<?, B> array, ValueExpression<?, B> index);
+
+    <X> ValueExpression<X, B> preInc(LRef<X> target);
+    <X> ValueExpression<X, B> preDec(LRef<X> target);
+    <X> ValueExpression<X, B> postInc(LRef<X> target);
+    <X> ValueExpression<X, B> postDec(LRef<X> target);
 
     BooleanExpression<B> literal(boolean val);
     ValueExpression<Byte, B> literal(byte val);

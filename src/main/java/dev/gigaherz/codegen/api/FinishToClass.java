@@ -3,13 +3,11 @@ package dev.gigaherz.codegen.api;
 import dev.gigaherz.codegen.api.codetree.info.ClassInfo;
 import dev.gigaherz.codegen.api.codetree.info.MethodInfo;
 import dev.gigaherz.codegen.codetree.expr.CodeBlockInternal;
-import dev.gigaherz.codegen.codetree.impl.ThisClass;
 import dev.gigaherz.codegen.type.TypeProxy;
 
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-@SuppressWarnings("UnstableApiUsage")
 public interface FinishToClass<T> extends Finishable<ClassDef<T>>, DefineClass<T>
 {
     @Override
@@ -22,12 +20,6 @@ public interface FinishToClass<T> extends Finishable<ClassDef<T>>, DefineClass<T
     default <F> DefineMethod<T, F> method(String name, TypeProxy<F> returnType)
     {
         return finish().method(name, returnType);
-    }
-
-    @Override
-    default DefineMethod<T, T> method(String name, ThisClass thisClass)
-    {
-        return finish().method(name, thisClass);
     }
 
     @Override

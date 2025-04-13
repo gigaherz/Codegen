@@ -2,6 +2,7 @@ package dev.gigaherz.codegen;
 
 import dev.gigaherz.codegen.tests.Test;
 import dev.gigaherz.codegen.tests.Vector3I;
+import dev.gigaherz.codegen.type.TypeProxy;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -12,7 +13,7 @@ public class ClassGenDemo
 {
     public static void main(String[] args)
     {
-        var builder = new ClassMaker(Thread.currentThread().getContextClassLoader()).begin()
+        var builder = new ClassMaker(Thread.currentThread().getContextClassLoader()).begin(cls -> cls
                 .setPublic()
                 .implementing(Vector3I.class)
                 .field("x", int.class).setPrivate().setFinal()
@@ -53,12 +54,23 @@ public class ClassGenDemo
                         .local("b", int.class, cb.thisCall("f", cb.localVar("a"), cb.set(cb.localRef("a"), cb.field("y"))))
                         .returnVal(cb.gt(cb.set(cb.localRef("a"), cb.field("z")), cb.localVar("b")))
                 )
-                /*.method("test2", ThisClass.instance())
+                .field("q", float.class).setPrivate()
+                .method("test2", cls)
                 .setPublic().setInstance().implementation(cb -> cb
-                        .local("a", int.class, cb.field("x"))
-                        .local("b", int.class, cb.thisCall("f", cb.localVar("a"), cb.set(cb.localRef("a"), cb.field("y"))))
-                        .returnVal(cb.gt(cb.set(cb.localRef("a"), cb.field("z")), cb.localVar("b")))
-                )*/;
+                        .local("t", cls, cb.thisVar())
+                        .forLoop(
+                                cb1 -> cb1.local("i", int.class, cb1.literal(0)),
+                                cb1 -> cb1.lt(cb1.localVar("i"), cb1.literal(10)),
+                                cb1 -> cb1.exec(cb1.postInc(cb1.localRef("i"))),
+                                cb1 -> cb1
+                                        .local("x", int.class, cb1.add(cb1.field("y"), cb1.field("z")))
+                                        .assign(cb1.localRef("t"), cb1.newObj(cls, cb1.localVar("x"), cb1.field("y"), cb1.field("z")))
+                        )
+                        .exec(cb.postInc(cb.fieldRef("q")))
+                        .returnVal(cb.localVar("t"))
+                )
+                .finish()
+        );
 
 
         try
@@ -78,7 +90,7 @@ public class ClassGenDemo
         {
             var cn = ci.thisType().getConstructor(int.class, int.class, int.class);
             cn.setAccessible(true);
-            var instance = cn.newInstance(1, 2, 3);
+            var instance = (Vector3I)cn.newInstance(1, 2, 3);
             var x = instance.test();
             System.out.println("test() returned " + x);
             System.out.println("test() returned " + (new Test(1,2,3)).test());
